@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { client } from "../../utils/square"
 
 //@ts-ignore
-// Define the toJSON method for BigInt values
 BigInt.prototype.toJSON = function () {
   return this.toString()
 }

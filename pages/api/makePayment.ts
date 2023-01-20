@@ -3,6 +3,11 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { randomUUID } from "crypto"
 import { client } from "../../utils/square"
 
+//@ts-ignore
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}
+
 type RequestBody = {
   orderDetail: {
     netAmountDueAmount: string

@@ -11,6 +11,11 @@ import { Metaplex } from "@metaplex-foundation/js"
 import { randomUUID } from "crypto"
 import { client } from "../../utils/square"
 
+//@ts-ignore
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}
+
 // transaction data
 let data = {
   receiver: "",
@@ -125,12 +130,9 @@ async function postImpl(
   amount: number,
   orderId: string
 ): Promise<PostResponse> {
-  // Convert to transaction
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash()
-  // const transaction = await transactionBuilder.toTransaction(latestBlockhash)
 
-  // create new Transaction
   const transaction = new Transaction({
     blockhash,
     lastValidBlockHeight,
@@ -173,7 +175,9 @@ async function postImpl(
           })
         }
       } catch (e) {}
+      break
     }
+    console.log("nft not found")
   }
 
   if (!matchfound) {
@@ -193,9 +197,10 @@ async function postImpl(
     transaction.add(mintInstruction)
   }
 
+  // USDC-dev mint
   const mint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr")
-  const mintData = await getMint(connection, mint)
-  let adjustedAmount = paymentAmount * 10 ** mintData.decimals
+  // adjust for USDC-dev mint decimals (6)
+  let adjustedAmount = paymentAmount * 10 ** 6
 
   const senderTokenAccount = await getAssociatedTokenAddress(mint, account)
   const receiverTokenAccount = await getAssociatedTokenAddress(mint, receiver)

@@ -2,6 +2,11 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import { client } from "../../utils/square"
 
+//@ts-ignore
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
