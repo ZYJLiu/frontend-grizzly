@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { randomUUID } from "crypto"
 import { redis } from "../../utils/redis"
 import { Client, Environment } from "square"
+import ts from "typescript"
 
 // Initialize the Square client with the access token and sandbox environment
 const client = new Client({
@@ -47,6 +48,7 @@ export default async function handler(
         sourceId: "EXTERNAL",
         idempotencyKey: randomUUID(),
         amountMoney: {
+          //@ts-ignore
           amount: netAmountDueAmount,
           currency: "USD",
         },
@@ -55,6 +57,7 @@ export default async function handler(
           type: "CRYPTO",
           source: "USDC",
           sourceFeeMoney: {
+            //@ts-ignore
             amount: netAmountDueAmount,
             currency: "USD",
           },
