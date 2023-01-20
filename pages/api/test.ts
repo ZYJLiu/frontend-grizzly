@@ -5,25 +5,13 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { PublicKey, Transaction } from "@solana/web3.js"
 import { getAssociatedTokenAddress, getMint } from "@solana/spl-token"
 import { BN } from "@project-serum/anchor"
-import { connection, program } from "../../utils/setup"
+import { connection, program, auth } from "../../utils/setup"
 import { redis } from "../../utils/redis"
 import { Metaplex } from "@metaplex-foundation/js"
-import { Client, Environment } from "square"
 import { randomUUID } from "crypto"
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey"
+import { client } from "../../utils/square"
 
-// Initialize the Square client with the access token and sandbox environment
-const client = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-  environment: Environment.Sandbox,
-})
-
-//@ts-ignore
-// Define the toJSON method for BigInt values
-BigInt.prototype.toJSON = function () {
-  return this.toString()
-}
-
+// transaction data
 let data = {
   receiver: "",
   reference: "",
@@ -81,7 +69,7 @@ async function post(
 ) {
   const { id } = req.query as { id: string }
   if (!id) {
-    res.status(400).json({ error: "No id provided" })
+    res.status(400).json({ error: "No terminal Id provided" })
     return
   }
   console.log(`terminal ${id}`)
@@ -190,11 +178,6 @@ async function postImpl(
 
   if (!matchfound) {
     const tokenAddress = await getAssociatedTokenAddress(sftMint, account)
-
-    const [auth] = findProgramAddressSync(
-      [Buffer.from("auth")],
-      program.programId
-    )
 
     const mintInstruction = await program.methods
       .mint()

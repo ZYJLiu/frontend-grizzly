@@ -19,6 +19,7 @@ import {
   Code,
   useDisclosure,
   Heading,
+  useBreakpointValue,
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useRouter } from "next/router"
@@ -26,7 +27,6 @@ import { useState, useEffect, useCallback } from "react"
 import QrModal from "../../components/QrCode"
 import axios from "axios"
 import {
-  CatalogData,
   Item,
   Items,
   ItemData,
@@ -53,6 +53,16 @@ export default function Terminal() {
 
   const [resultPayment, setResultPayment] = useState<Payment | null>(null)
   const [confirmed, setConfirmed] = useState(false)
+
+  const [size, setSize] = useState(() =>
+    typeof window === "undefined" ? 100 : Math.min(window.outerWidth - 10, 512)
+  )
+
+  useEffect(() => {
+    const listener = () => setSize(Math.min(window.outerWidth - 10, 512))
+    window.addEventListener("resize", listener)
+    return () => window.removeEventListener("resize", listener)
+  }, [])
 
   async function fetchCatalog() {
     try {
@@ -202,10 +212,20 @@ export default function Terminal() {
     setItems(resetItems)
   }
 
+  const scale = useBreakpointValue({
+    base: 0.9,
+    md: 1,
+    lg: 1,
+  })
+
   return (
-    <VStack display="flex" width="100%">
+    <VStack display="flex">
       <Heading>Terminal {id}</Heading>
-      <VStack alignItems="top" justifyContent="center">
+      <VStack
+        alignItems="top"
+        justifyContent="center"
+        style={{ transform: `scale(${scale})` }}
+      >
         <VStack alignItems="top">
           <Table variant="simple">
             <TableCaption fontWeight="bold" placement="top">

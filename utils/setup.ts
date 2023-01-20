@@ -7,6 +7,7 @@ import {
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet"
 import { IDL, AnchorMisc } from "../idl/anchor_misc"
 import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js"
+import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey"
 
 // Create a connection to the devnet cluster
 export const connection = new Connection(clusterApiUrl("devnet"))
@@ -26,3 +27,9 @@ export const program = new Program(
   IDL as Idl,
   programId
 ) as unknown as Program<AnchorMisc>
+
+// PDA for mint auth and program USDC-dev token account
+export const [auth] = findProgramAddressSync(
+  [Buffer.from("auth")],
+  program.programId
+)

@@ -2,9 +2,8 @@
 // Airdrops 2 SOL and transfers 100 USDC-dev to the wallet scanning the QR code
 import { NextApiRequest, NextApiResponse } from "next"
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js"
-import { connection, program } from "../../utils/setup"
+import { connection, program, auth } from "../../utils/setup"
 import { getAssociatedTokenAddress } from "@solana/spl-token"
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey"
 
 // Public key of wallet scanning QR code
 type InputData = {
@@ -75,7 +74,6 @@ async function post(
   }
 }
 
-// build the transaction
 async function buildTransaction(
   account: PublicKey,
   reference: PublicKey
@@ -102,13 +100,7 @@ async function buildTransaction(
   })
 
   const mint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr")
-
   const tokenAddress = await getAssociatedTokenAddress(mint, account)
-
-  const [auth] = findProgramAddressSync(
-    [Buffer.from("auth")],
-    program.programId
-  )
 
   const instruction = await program.methods
     .usdcDevTransfer()

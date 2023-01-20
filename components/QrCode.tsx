@@ -37,11 +37,11 @@ const QrModal = ({
   const { publicKey } = useWallet()
 
   const [size, setSize] = useState(() =>
-    typeof window === "undefined" ? 100 : Math.min(window.outerWidth - 10, 512)
+    typeof window === "undefined" ? 100 : Math.min(window.outerWidth - 5, 512)
   )
 
   useEffect(() => {
-    const listener = () => setSize(Math.min(window.outerWidth - 10, 512))
+    const listener = () => setSize(Math.min(window.outerWidth - 5, 512))
     window.addEventListener("resize", listener)
     return () => window.removeEventListener("resize", listener)
   }, [])
