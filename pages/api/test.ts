@@ -9,7 +9,12 @@ import { connection, program, auth } from "../../utils/setup"
 import { redis } from "../../utils/redis"
 import { Metaplex } from "@metaplex-foundation/js"
 import { randomUUID } from "crypto"
-import { client } from "../../utils/square"
+import { Client, Environment } from "square"
+
+const client = new Client({
+  accessToken: process.env.SQUARE_ACCESS_TOKEN,
+  environment: Environment.Sandbox,
+})
 
 //@ts-ignore
 BigInt.prototype.toJSON = function () {

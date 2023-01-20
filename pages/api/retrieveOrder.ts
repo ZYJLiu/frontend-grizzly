@@ -1,6 +1,11 @@
 // Square API to retrieve an existing order
 import type { NextApiRequest, NextApiResponse } from "next"
-import { client } from "../../utils/square"
+import { Client, Environment } from "square"
+
+const client = new Client({
+  accessToken: process.env.SQUARE_ACCESS_TOKEN,
+  environment: Environment.Sandbox,
+})
 
 //@ts-ignore
 BigInt.prototype.toJSON = function () {
