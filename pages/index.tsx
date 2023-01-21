@@ -15,6 +15,8 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Link,
+  useColorMode,
 } from "@chakra-ui/react"
 import { Keypair } from "@solana/web3.js"
 import { useEffect, useRef, useState } from "react"
@@ -22,6 +24,7 @@ import { createQRCode } from "../utils/createQrCode/setup"
 import { checkTransaction } from "../utils/checkTransaction"
 
 export default function Home() {
+  const { colorMode } = useColorMode()
   // QrRef is a reference to the div that will contain the QR code
   const qrRef = useRef<HTMLDivElement>(null)
 
@@ -153,6 +156,25 @@ export default function Home() {
                           </ListItem>
                           <ListItem>
                             Square Order updated to reflect discount
+                          </ListItem>
+                        </UnorderedList>
+                      </Box>
+                      <Box>
+                        <Heading size="xs" textTransform="uppercase">
+                          Alternative set up
+                        </Heading>
+                        <UnorderedList pt="2" fontSize="sm" spacing={1}>
+                          <ListItem>
+                            <Link
+                              href="https://spl-token-faucet.com/?token-name=USDC"
+                              isExternal
+                              color="blue.500"
+                              _hover={{
+                                color: "blue.600",
+                              }}
+                            >
+                              Click here for USDC-dev and Devnet SOL
+                            </Link>
                           </ListItem>
                         </UnorderedList>
                       </Box>
