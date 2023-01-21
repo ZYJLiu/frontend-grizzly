@@ -20,10 +20,12 @@ import {
   useDisclosure,
   Heading,
   useBreakpointValue,
+  Spinner,
+  Flex,
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useRouter } from "next/router"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import QrModal from "../../components/QrCode"
 import axios from "axios"
 import {
@@ -38,36 +40,55 @@ import {
 export default function Terminal() {
   const { connected } = useWallet()
   const router = useRouter()
+
+  // Get terminal Id from URL
   const { id } = router.query as { id: string }
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  // Open QR Code Modal
+  const { isOpen, onOpen, onClose } = useDisclosure({
+    onClose: () => {
+      reset()
+    },
+  })
+
+  // Loading for order to be created before displaying QR code
   const [isLoading, setIsLoading] = useState(false)
 
-  const [items, setItems] = useState<{ [key: string]: Item }>({})
-  const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
-  const [total, setTotal] = useState(0)
-
-  const [resultOrder, setResultOrder] = useState<Order | null>(null)
-  const [orderDetail, setOrderDetail] = useState<OrderDetail | null>(null)
-  const [orderId, setOrderId] = useState<string | null>(null)
-
-  const [resultPayment, setResultPayment] = useState<Payment | null>(null)
+  // Solana Pay transaction confirmed, trigger create Square payment
   const [confirmed, setConfirmed] = useState(false)
 
-  const [size, setSize] = useState(() =>
-    typeof window === "undefined" ? 100 : Math.min(window.outerWidth - 10, 512)
-  )
+  // Items in catalog, used to create Item Selection/Checkout table
+  const [items, setItems] = useState<{ [key: string]: Item }>({})
 
-  useEffect(() => {
-    const listener = () => setSize(Math.min(window.outerWidth - 10, 512))
-    window.addEventListener("resize", listener)
-    return () => window.removeEventListener("resize", listener)
-  }, [])
+  // Quantity of items in catalog used to create a new order
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>({})
 
-  async function fetchCatalog() {
+  // Store new Order Id and used to retrieve updated Order Detail
+  const [orderId, setOrderId] = useState<string | null>(null)
+
+  // Order Detail, used to create a new payment
+  const [orderDetail, setOrderDetail] = useState<OrderDetail | null>(null)
+
+  // SquareAPI order detail to display
+  const [resultOrder, setResultOrder] = useState<Order | null>(null)
+
+  // SquareAPI payment detail to display
+  const [resultPayment, setResultPayment] = useState<Payment | null>(null)
+
+  // Fetch catalog from SquareAPI
+  const fetchCatalog = async () => {
     try {
       const { data } = await axios.post("/api/fetchCatalog")
-      const itemsData = data.objects.reduce(
+      return data.objects
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // Fetch catalog from SquareAPI when component mounts and set items state
+  useEffect(() => {
+    fetchCatalog().then((data) => {
+      const itemsData = data.reduce(
         (acc: { [key: string]: object }, item: ItemData) => {
           const {
             id,
@@ -92,24 +113,21 @@ export default function Terminal() {
         {}
       )
       setItems(itemsData)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  // Run fetchCatalog when the component mounts
-  useEffect(() => {
-    fetchCatalog()
+    })
   }, [])
 
+  // Update item quantities
   const handleChange = useCallback(
     (event: string, id: string) => {
       const value = Number(event)
+
+      // Update items state with the new value
       const updatedItems = { ...items }
       updatedItems[id].quantity = value
       setItems(updatedItems)
 
-      // Update quantities with the new value or remove the key if value is 0
+      // Update quantities state with the new value or remove the key if value is 0
+      // Separate state to be used to create a new order
       if (value === 0) {
         const { [id]: removed, ...updatedQuantities } = quantities
         setQuantities(updatedQuantities)
@@ -120,23 +138,16 @@ export default function Terminal() {
     [items, quantities]
   )
 
-  function calculateTotal() {
-    const totalAmount = Object.values(items).reduce((acc, item) => {
-      return item.quantity > 0
-        ? acc + (Number(item.price) * item.quantity) / 100
-        : acc
+  // Calculate total price from quantities
+  const total = useMemo(() => {
+    return Object.values(items).reduce((acc, item) => {
+      return (
+        acc + (Number(item.price) * (quantities[item.variationId] || 0)) / 100
+      )
     }, 0)
-    setTotal(totalAmount)
-  }
+  }, [items, quantities])
 
-  // Run fetchCatalog when the component mounts
-  useEffect(() => {
-    calculateTotal()
-    console.log(quantities)
-    console.log(items)
-  }, [items])
-
-  // async function handleCreateOrder(callback: () => void) {
+  // Create a new order
   async function handleCreateOrder() {
     try {
       const { data } = await axios.post("/api/createOrder", { quantities })
@@ -146,25 +157,16 @@ export default function Terminal() {
           netAmountDueMoney: { amount: netAmountDueAmount },
         },
       } = data
-      setResultOrder(data)
-      setOrderDetail({ orderId, netAmountDueAmount })
       setOrderId(orderId)
+      setOrderDetail({ orderId, netAmountDueAmount })
+      setResultOrder(data)
       setIsLoading(false)
     } catch (error) {
       console.error(error)
     }
   }
 
-  async function handlePayment() {
-    try {
-      const { data } = await axios.post("/api/makePayment", { orderDetail })
-      setResultPayment(data)
-      console.log(data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
+  // Retrieve order, in case changes are made (discount applied, etc.)
   async function handleRetrieveOrder() {
     console.log("retrieve order")
     console.log(orderId)
@@ -186,21 +188,36 @@ export default function Terminal() {
     }
   }
 
+  // Create a new payment once Solana Pay transaction is confirmed
+  async function handlePayment() {
+    try {
+      const { data } = await axios.post("/api/makePayment", { orderDetail })
+      setResultPayment(data)
+      console.log(data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // Retrieve order once Solana Pay transaction is confirmed
   useEffect(() => {
     if (confirmed) handleRetrieveOrder()
   }, [confirmed])
 
+  // Create a new payment once updated order detail is retrieved
   useEffect(() => {
     if (confirmed && orderDetail) handlePayment()
   }, [orderDetail])
 
+  // Reset state
   const resetState = () => {
     setResultOrder(null)
     setOrderDetail(null)
     setResultPayment(null)
-    setQuantities({})
-    setTotal(0)
+    reset()
+  }
 
+  const reset = () => {
     const resetItems: Items = Object.entries(items).reduce(
       (acc: Items, [id, item]) => {
         acc[id] = { ...item, quantity: 0 }
@@ -210,8 +227,10 @@ export default function Terminal() {
     )
 
     setItems(resetItems)
+    setQuantities({})
   }
 
+  // scale table based on screen size
   const scale = useBreakpointValue({
     base: 0.9,
     md: 1,
@@ -226,21 +245,22 @@ export default function Terminal() {
         justifyContent="center"
         style={{ transform: `scale(${scale})` }}
       >
-        <VStack alignItems="top">
-          <Table variant="simple">
-            <TableCaption fontWeight="bold" placement="top">
-              Item Selection
-            </TableCaption>
-            <Thead>
-              <Tr>
-                <Th>Item</Th>
-                <Th>Description</Th>
-                <Th>Price</Th>
-                <Th>Quantity</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Object.keys(items).map((key) => {
+        {/* Item Selection Table */}
+        <Table variant="simple">
+          <TableCaption fontWeight="bold" placement="top">
+            Item Selection
+          </TableCaption>
+          <Thead>
+            <Tr>
+              <Th>Item</Th>
+              <Th>Description</Th>
+              <Th>Price</Th>
+              <Th>Quantity</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {items ? (
+              Object.keys(items).map((key) => {
                 const item: Item = items[key]
                 return (
                   <Tr key={item.variationId}>
@@ -269,11 +289,22 @@ export default function Terminal() {
                     </Td>
                   </Tr>
                 )
-              })}
-            </Tbody>
-          </Table>
-        </VStack>
+              })
+            ) : (
+              <Td colSpan={4} style={{ textAlign: "center" }}>
+                <Spinner
+                  thickness="4px"
+                  speed="0.65s"
+                  emptyColor="gray.200"
+                  color="blue.500"
+                  size="xl"
+                />
+              </Td>
+            )}
+          </Tbody>
+        </Table>
 
+        {/* Checkout Table */}
         <TableContainer>
           <Table variant="simple">
             <TableCaption fontWeight="bold" placement="top">
@@ -331,6 +362,7 @@ export default function Terminal() {
         </TableContainer>
       </VStack>
 
+      {/* Solana Pay QR Code Modal */}
       {isOpen && (
         <QrModal
           onClose={onClose}
@@ -344,6 +376,7 @@ export default function Terminal() {
       )}
 
       <HStack alignItems="top" justifyContent="center">
+        {/* Square Order Detail */}
         {resultOrder && orderDetail && (
           <VStack>
             <Text>Order ID: {orderDetail?.orderId}</Text>
@@ -353,6 +386,7 @@ export default function Terminal() {
           </VStack>
         )}
 
+        {/* Square Payment Detail */}
         {resultPayment && (
           <VStack>
             <Text>Payment ID: {resultPayment.payment.id}</Text>

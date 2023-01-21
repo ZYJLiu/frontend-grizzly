@@ -1,3 +1,4 @@
+// QR code generation for the setup page
 import { createQR, encodeURL, TransactionRequestURLFields } from "@solana/pay"
 import { PublicKey } from "@solana/web3.js"
 import { RefObject } from "react"

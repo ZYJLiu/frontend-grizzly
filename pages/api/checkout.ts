@@ -1,4 +1,4 @@
-// Create Solana Pay transaction for Square order
+// Create Solana Pay transaction for Square order amount
 // Checks if wallet holds "discount" NFT, and if so, applies 10% discount and updates Square order
 // If wallet does not hold "discount" NFT, add instruction to mint "discount" NFT to wallet
 import { NextApiRequest, NextApiResponse } from "next"
@@ -243,7 +243,8 @@ async function checkDiscountNft(
   // If NFT with specific mintAddress exists
   if (nftDiscountExists) {
     console.log("nft found")
-    paymentAmount *= 0.9
+    paymentAmount = Math.round(paymentAmount * 0.9 * 100) / 100
+    console.log("paymentAmount", paymentAmount)
 
     // Update Square Order with 10% discount
     try {

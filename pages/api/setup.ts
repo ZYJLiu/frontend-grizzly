@@ -1,5 +1,5 @@
-// Used for setup Solana Pay QR code on Home page
-// Airdrops 2 SOL and transfers 100 USDC-dev to the wallet scanning the QR code
+// Solana Pay QR Code to airdrop 2 SOL and transfers 100 USDC-dev to the wallet scanning the QR code
+// Used to setup mock wallet for testing
 import { NextApiRequest, NextApiResponse } from "next"
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js"
 import { connection, program, auth } from "../../utils/setup"
@@ -84,6 +84,7 @@ async function buildTransaction(
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash()
 
+  // Wait for airdrop to confirm
   await connection.confirmTransaction(
     {
       blockhash,
@@ -93,15 +94,21 @@ async function buildTransaction(
     "confirmed"
   )
 
+  // Create new transaction
   const transaction = new Transaction({
     feePayer: account,
     blockhash,
     lastValidBlockHeight,
   })
 
+  // USDC-dev mint address
   const mint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr")
+
+  // Get associated token address for account
   const tokenAddress = await getAssociatedTokenAddress(mint, account)
 
+  // Create transfer instruction to fund mobile wallet with USDC-dev
+  // Using Anchor to generate instruction
   const instruction = await program.methods
     .usdcDevTransfer()
     .accounts({
@@ -113,19 +120,23 @@ async function buildTransaction(
     })
     .instruction()
 
+  // Add reference key to instruction
+  // Used to identify Solana Pay transaction
   instruction.keys.push({
     pubkey: reference,
     isSigner: false,
     isWritable: false,
   })
 
+  // Add instruction to transaction
   transaction.add(instruction)
 
+  // Serialize transaction
   const serializedTransaction = transaction.serialize({
     requireAllSignatures: false,
   })
-  const base64 = serializedTransaction.toString("base64")
 
+  const base64 = serializedTransaction.toString("base64")
   const message = "Airdrop of 2 SOL and 100 USDC-dev"
 
   return {

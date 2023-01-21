@@ -14,8 +14,10 @@ import { HamburgerIcon } from "@chakra-ui/icons"
 import Link from "next/link"
 import WalletMultiButton from "./WalletMultiButton"
 import { terminals } from "../utils/terminals"
+import { useRouter } from "next/router"
 
 const Navbar = () => {
+  const router = useRouter()
   return (
     <Flex px={4} py={4}>
       <Menu>
@@ -41,7 +43,7 @@ const Navbar = () => {
       </Menu>
 
       <Spacer />
-      <WalletMultiButton />
+      {router.pathname === "/" && <WalletMultiButton />}
     </Flex>
   )
 }

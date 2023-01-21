@@ -9,8 +9,10 @@ import {
 } from "@solana/pay"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js"
+import { connection } from "../utils/setup"
 import { useEffect, useRef, useState } from "react"
 import Confirmed from "./Confirmed"
+import axios from "axios"
 
 interface Props {
   onClose: () => void
@@ -31,11 +33,11 @@ const QrModal = ({
   orderId,
   isLoading,
 }: Props) => {
-  const connection = new Connection(clusterApiUrl("devnet"))
   const qrRef = useRef<HTMLDivElement>(null)
   const [reference, setReference] = useState(Keypair.generate().publicKey)
   const { publicKey } = useWallet()
 
+  // Size Modal
   const [size, setSize] = useState(() =>
     typeof window === "undefined" ? 100 : Math.min(window.outerWidth - 5, 512)
   )
@@ -46,6 +48,7 @@ const QrModal = ({
     return () => window.removeEventListener("resize", listener)
   }, [])
 
+  // Update data for Solana Pay transaction
   function updateData(
     publicKey?: PublicKey,
     reference?: PublicKey,
@@ -64,19 +67,17 @@ const QrModal = ({
       orderId: orderId ? orderId : "",
     }
 
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((res) => res.json())
-      .then((json) => console.log(json))
+    axios
+      .post(url.toString(), data)
+      .then((response) => console.log(response))
+      .catch((error) => console.log(error))
   }
 
+  // Call function to update data and create QR code
   useEffect(() => {
-    if (!publicKey) return
+    if (!publicKey || !orderId) return
+    updateData(publicKey, reference, value, orderId)
+
     const url = new URL("/api/checkout", window.location.origin)
     const searchParams = new URLSearchParams()
     searchParams.append("id", id)
@@ -92,10 +93,9 @@ const QrModal = ({
       qrRef.current.innerHTML = ""
       qr.append(qrRef.current)
     }
+  }, [size, reference, publicKey, orderId])
 
-    updateData(publicKey, reference, value, orderId)
-  }, [size, reference, publicKey, isLoading])
-
+  // Check transaction status
   async function checkTransaction(interval: NodeJS.Timeout) {
     try {
       const signatureInfo = await findReference(connection, reference, {
@@ -118,7 +118,7 @@ const QrModal = ({
   useEffect(() => {
     const interval: NodeJS.Timeout = setInterval(
       () => checkTransaction(interval),
-      1500
+      1000
     )
 
     return () => {
