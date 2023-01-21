@@ -54,6 +54,9 @@ export default function Terminal() {
   // Loading for order to be created before displaying QR code
   const [isLoading, setIsLoading] = useState(false)
 
+  // Loading while wating to fetch Square catalog to display items selection table
+  const [isLoadingTable, setIsLoadingTable] = useState(true)
+
   // Solana Pay transaction confirmed, trigger create Square payment
   const [confirmed, setConfirmed] = useState(false)
 
@@ -113,6 +116,7 @@ export default function Terminal() {
         {}
       )
       setItems(itemsData)
+      setIsLoadingTable(false)
     })
   }, [])
 
@@ -259,7 +263,7 @@ export default function Terminal() {
             </Tr>
           </Thead>
           <Tbody>
-            {items ? (
+            {!isLoadingTable ? (
               Object.keys(items).map((key) => {
                 const item: Item = items[key]
                 return (
@@ -291,15 +295,17 @@ export default function Terminal() {
                 )
               })
             ) : (
-              <Td colSpan={4} style={{ textAlign: "center" }}>
-                <Spinner
-                  thickness="4px"
-                  speed="0.65s"
-                  emptyColor="gray.200"
-                  color="blue.500"
-                  size="xl"
-                />
-              </Td>
+              <Tr>
+                <Td colSpan={4} style={{ textAlign: "center" }}>
+                  <Spinner
+                    thickness="4px"
+                    speed="0.65s"
+                    emptyColor="gray.200"
+                    color="blue.500"
+                    size="xl"
+                  />
+                </Td>
+              </Tr>
             )}
           </Tbody>
         </Table>
