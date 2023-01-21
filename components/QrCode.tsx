@@ -52,7 +52,7 @@ const QrModal = ({
     value?: number,
     orderId?: string
   ) {
-    const url = new URL("/api/test", window.location.origin)
+    const url = new URL("/api/checkout", window.location.origin)
     const searchParams = new URLSearchParams({ path: "update-data" })
     searchParams.append("id", id)
     url.search = searchParams.toString()
@@ -77,7 +77,7 @@ const QrModal = ({
 
   useEffect(() => {
     if (!publicKey) return
-    const url = new URL("/api/test", window.location.origin)
+    const url = new URL("/api/checkout", window.location.origin)
     const searchParams = new URLSearchParams()
     searchParams.append("id", id)
     url.search = searchParams.toString()

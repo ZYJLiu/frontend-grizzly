@@ -1,9 +1,3 @@
-import { Client, Environment } from "square"
-export const client = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
-  environment: Environment.Sandbox,
-})
-
 // Interfaces used for the Square API responses
 export interface CatalogData {
   objects: {
