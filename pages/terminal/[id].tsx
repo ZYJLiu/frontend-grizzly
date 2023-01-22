@@ -21,7 +21,8 @@ import {
   Heading,
   useBreakpointValue,
   Spinner,
-  Flex,
+  Card,
+  CardBody,
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useRouter } from "next/router"
@@ -241,132 +242,137 @@ export default function Terminal() {
     lg: 1,
   })
 
+  // hide Square response data on small screens
+  const showHStack = useBreakpointValue({ base: false, md: false, lg: true })
+
   return (
-    <VStack display="flex">
-      <Heading>Terminal {id}</Heading>
-      <VStack
-        alignItems="top"
-        justifyContent="center"
-        style={{ transform: `scale(${scale})` }}
-      >
-        {/* Item Selection Table */}
-        <Table variant="simple">
-          <TableCaption fontWeight="bold" placement="top">
-            Item Selection
-          </TableCaption>
-          <Thead>
-            <Tr>
-              <Th>Item</Th>
-              <Th>Description</Th>
-              <Th>Price</Th>
-              <Th>Quantity</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {!isLoadingTable ? (
-              Object.keys(items).map((key) => {
-                const item: Item = items[key]
-                return (
-                  <Tr key={item.variationId}>
-                    <Td>{item.name}</Td>
-                    <Td>{item.description}</Td>
-                    <Td isNumeric>
-                      ${(item.price as unknown as number) / 100}
-                    </Td>
-                    <Td>
-                      <NumberInput
-                        width={20}
-                        step={1}
-                        min={0}
-                        max={30}
-                        value={quantities[item.variationId] || 0}
-                        onChange={(event) =>
-                          handleChange(event, item.variationId)
-                        }
-                      >
-                        <NumberInputField />
-                        <NumberInputStepper>
-                          <NumberIncrementStepper />
-                          <NumberDecrementStepper />
-                        </NumberInputStepper>
-                      </NumberInput>
+    <VStack alignItems="center" justifyContent="center">
+      <Card rounded="lg" shadow="md" mx="auto">
+        <CardBody rounded="lg">
+          <Heading textAlign="center">Terminal {id}</Heading>
+          <VStack style={{ transform: `scale(${scale})` }}>
+            {/* Item Selection Table */}
+            <Table variant="simple">
+              <TableCaption fontWeight="bold" placement="top">
+                Item Selection
+              </TableCaption>
+              <Thead>
+                <Tr>
+                  <Th>Item</Th>
+                  <Th>Description</Th>
+                  <Th>Price</Th>
+                  <Th>Quantity</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {!isLoadingTable ? (
+                  Object.keys(items).map((key) => {
+                    const item: Item = items[key]
+                    return (
+                      <Tr key={item.variationId}>
+                        <Td>{item.name}</Td>
+                        <Td>{item.description}</Td>
+                        <Td isNumeric>
+                          ${(item.price as unknown as number) / 100}
+                        </Td>
+                        <Td>
+                          <NumberInput
+                            width={20}
+                            step={1}
+                            min={0}
+                            max={30}
+                            value={quantities[item.variationId] || 0}
+                            onChange={(event) =>
+                              handleChange(event, item.variationId)
+                            }
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </Td>
+                      </Tr>
+                    )
+                  })
+                ) : (
+                  <Tr>
+                    <Td colSpan={4} style={{ textAlign: "center" }}>
+                      <Spinner
+                        thickness="4px"
+                        speed="0.65s"
+                        emptyColor="gray.200"
+                        color="blue.500"
+                        size="xl"
+                      />
                     </Td>
                   </Tr>
-                )
-              })
-            ) : (
-              <Tr>
-                <Td colSpan={4} style={{ textAlign: "center" }}>
-                  <Spinner
-                    thickness="4px"
-                    speed="0.65s"
-                    emptyColor="gray.200"
-                    color="blue.500"
-                    size="xl"
-                  />
-                </Td>
-              </Tr>
-            )}
-          </Tbody>
-        </Table>
+                )}
+              </Tbody>
+            </Table>
 
-        {/* Checkout Table */}
-        <TableContainer>
-          <Table variant="simple">
-            <TableCaption fontWeight="bold" placement="top">
-              Checkout
-            </TableCaption>
-            <Thead>
-              <Tr>
-                <Th>Item</Th>
-                <Th>Quantity</Th>
-                <Th isNumeric>Amount</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Object.values(items).map((item) => {
-                if (item.quantity > 0) {
-                  return (
-                    <Tr key={item.variationId}>
-                      <Td>{item.name}</Td>
-                      <Td>{item.quantity}</Td>
-                      <Td isNumeric>
-                        {(Number(item.price) * item.quantity) / 100}
-                      </Td>
-                    </Tr>
-                  )
-                }
-              })}
-              <Tr style={{ borderTopWidth: "4px", borderTopColor: "black" }}>
-                <Td colSpan={2} textAlign="right">
-                  Total
-                </Td>
-                <Td isNumeric>{total}</Td>
-              </Tr>
-              <Tr>
-                <Td textAlign="center" colSpan={3}>
-                  <VStack>
-                    <Button
-                      onClick={() => {
-                        if (connected) {
-                          handleCreateOrder()
-                          onOpen()
-                          setIsLoading(true)
-                        } else {
-                          alert("Connect Wallet")
-                        }
-                      }}
-                    >
-                      Solana Pay
-                    </Button>
-                    <Button onClick={resetState}>Reset</Button>
-                  </VStack>
-                </Td>
-              </Tr>
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </VStack>
+            {/* Checkout Table */}
+            <TableContainer>
+              <Table variant="simple">
+                <TableCaption fontWeight="bold" placement="top">
+                  Checkout
+                </TableCaption>
+                <Thead>
+                  <Tr>
+                    <Th>Item</Th>
+                    <Th>Quantity</Th>
+                    <Th isNumeric>Amount</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {Object.values(items).map((item) => {
+                    if (item.quantity > 0) {
+                      return (
+                        <Tr key={item.variationId}>
+                          <Td>{item.name}</Td>
+                          <Td>{item.quantity}</Td>
+                          <Td isNumeric>
+                            {(Number(item.price) * item.quantity) / 100}
+                          </Td>
+                        </Tr>
+                      )
+                    }
+                  })}
+                  <Tr
+                    style={{ borderTopWidth: "4px", borderTopColor: "black" }}
+                  >
+                    <Td colSpan={2} textAlign="right">
+                      Total
+                    </Td>
+                    <Td isNumeric>{total}</Td>
+                  </Tr>
+                  <Tr>
+                    <Td textAlign="center" colSpan={3}>
+                      <VStack>
+                        <Button
+                          onClick={() => {
+                            if (connected) {
+                              handleCreateOrder()
+                              onOpen()
+                              setIsLoading(true)
+                            } else {
+                              alert("Connect Wallet")
+                            }
+                          }}
+                        >
+                          Solana Pay
+                        </Button>
+                        <Button onClick={resetState}>Reset</Button>
+                      </VStack>
+                    </Td>
+                  </Tr>
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </VStack>
+        </CardBody>
+      </Card>
 
       {/* Solana Pay QR Code Modal */}
       {isOpen && (
@@ -381,27 +387,30 @@ export default function Terminal() {
         />
       )}
 
-      <HStack alignItems="top" justifyContent="center">
-        {/* Square Order Detail */}
-        {resultOrder && orderDetail && (
-          <VStack>
-            <Text>Order ID: {orderDetail?.orderId}</Text>
-            <Code whiteSpace="pre" fontFamily="mono">
-              {JSON.stringify(resultOrder, null, 2)}
-            </Code>
-          </VStack>
-        )}
+      {/* Square API Response Data */}
+      {showHStack && (
+        <HStack alignItems="top" justifyContent="center">
+          {/* Square Order Detail */}
+          {resultOrder && orderDetail && (
+            <VStack>
+              <Text>Order ID: {orderDetail?.orderId}</Text>
+              <Code whiteSpace="pre" fontFamily="mono">
+                {JSON.stringify(resultOrder, null, 2)}
+              </Code>
+            </VStack>
+          )}
 
-        {/* Square Payment Detail */}
-        {resultPayment && (
-          <VStack>
-            <Text>Payment ID: {resultPayment.payment.id}</Text>
-            <Code whiteSpace="pre" fontFamily="mono">
-              {JSON.stringify(resultPayment, null, 2)}
-            </Code>
-          </VStack>
-        )}
-      </HStack>
+          {/* Square Payment Detail */}
+          {resultPayment && (
+            <VStack>
+              <Text>Payment ID: {resultPayment.payment.id}</Text>
+              <Code whiteSpace="pre" fontFamily="mono">
+                {JSON.stringify(resultPayment, null, 2)}
+              </Code>
+            </VStack>
+          )}
+        </HStack>
+      )}
     </VStack>
   )
 }

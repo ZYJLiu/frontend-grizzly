@@ -82,6 +82,7 @@ const QrModal = ({
     const searchParams = new URLSearchParams()
     searchParams.append("id", id)
     url.search = searchParams.toString()
+    console.log("Solana Pay Terminal Link:", url.toString())
 
     const urlParams = {
       link: new URL(url),
