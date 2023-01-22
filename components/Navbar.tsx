@@ -1,5 +1,5 @@
 // Navbar component
-// Home is setup page, airdrop devnet SOL and USDC-dev tokens to the wallet
+// Home is setup page, airdrop devnet SOL and USDC-dev tokens to mobile wallet
 // Remaining pages are Solana Pay point of sale "terminals", number of terminals is defined in utils/terminals.ts
 import {
   MenuButton,

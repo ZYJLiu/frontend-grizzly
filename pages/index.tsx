@@ -1,3 +1,4 @@
+// setup Home page
 import {
   Box,
   Heading,
@@ -86,7 +87,7 @@ export default function Home() {
                       <ListItem>
                         Download Solflare or Phantom mobile wallet
                       </ListItem>
-                      <ListItem>Update to latest verion on device</ListItem>
+                      <ListItem>Update to latest version on device</ListItem>
                       <ListItem>Change to Devnet on mobile wallet</ListItem>
                       <ListItem>
                         Scan QR Code above to fund mobile wallet

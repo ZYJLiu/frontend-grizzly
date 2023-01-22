@@ -306,7 +306,7 @@ async function getCreateNftInstruction(
   discountCollectionMint: PublicKey,
   auth: PublicKey
 ): Promise<TransactionInstruction> {
-  // Get the metadata and master edition PDAs of the NFT
+  // Get the metadata and master edition PDAs of the NFTs
   const metaplex = Metaplex.make(connection)
   const [
     metadataPDA,
@@ -335,7 +335,7 @@ async function getCreateNftInstruction(
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
   )
 
-  // Create the instruction for minting new NFT to the collection
+  // Create the instruction for minting new NFT to user as part of a collection
   const createNftInstruction = await program.methods
     .createNftInCollection(nft.uri, nft.name, nft.symbol)
     .accounts({
@@ -398,7 +398,7 @@ async function getTransferInstruction(
 }
 
 // // If NFT discount does not exist, mint one
-// // Used SFT to test, replaced with NFT, but is slower
+// // Used SFT to test, replaced with NFT
 // if (!nftDiscountExists) {
 //   const mintInstruction = await getMintInstruction(
 //     program,

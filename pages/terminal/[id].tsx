@@ -1,3 +1,4 @@
+// point of sale terminal page
 import {
   Button,
   Text,
