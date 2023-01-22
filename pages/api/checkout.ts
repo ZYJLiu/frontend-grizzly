@@ -184,8 +184,9 @@ async function buildTransaction(
   const nftMint = Keypair.generate()
   if (!nftDiscountExists) {
     // Create NFT instruction needs extra compute units
+    // This was causing the transaction to fail
     const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
-      units: 275_000,
+      units: 400_000,
     })
 
     // Get the create NFT instruction
