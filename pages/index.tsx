@@ -62,7 +62,7 @@ export default function Home() {
       <Heading>Scan for Setup</Heading>
       <Box ref={qrRef} />
 
-      <Card rounded="lg">
+      <Card rounded="lg" mx="auto">
         <CardBody rounded="lg">
           <Accordion defaultIndex={[0]} allowToggle>
             <AccordionItem rounded="lg">
@@ -83,7 +83,10 @@ export default function Home() {
                       Set up mobile wallet
                     </Heading>
                     <UnorderedList pt="2" fontSize="sm" spacing={1}>
-                      <ListItem>Use Solflare mobile wallet</ListItem>
+                      <ListItem>
+                        Download Solflare or Phantom mobile wallet
+                      </ListItem>
+                      <ListItem>Update to latest verion on device</ListItem>
                       <ListItem>Change to Devnet on mobile wallet</ListItem>
                       <ListItem>
                         Scan QR Code above to fund mobile wallet
@@ -102,7 +105,7 @@ export default function Home() {
                       <ListItem>Change to Devnet on browser wallet</ListItem>
                       <ListItem>Connect browser wallet</ListItem>
                       <ListItem>
-                        Transactions sent USDC-dev to connected wallet
+                        Transactions send USDC-dev to connected wallet
                       </ListItem>
                     </UnorderedList>
                   </Box>

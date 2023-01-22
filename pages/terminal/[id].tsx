@@ -333,7 +333,13 @@ export default function Terminal() {
                           <Td>{item.name}</Td>
                           <Td>{item.quantity}</Td>
                           <Td isNumeric>
-                            {(Number(item.price) * item.quantity) / 100}
+                            {(
+                              (Number(item.price) * item.quantity) /
+                              100
+                            ).toLocaleString("en-US", {
+                              style: "currency",
+                              currency: "USD",
+                            })}
                           </Td>
                         </Tr>
                       )
@@ -345,7 +351,12 @@ export default function Terminal() {
                     <Td colSpan={2} textAlign="right">
                       Total
                     </Td>
-                    <Td isNumeric>{total}</Td>
+                    <Td isNumeric>
+                      {total.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      })}
+                    </Td>
                   </Tr>
                   <Tr>
                     <Td textAlign="center" colSpan={3}>

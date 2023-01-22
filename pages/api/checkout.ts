@@ -324,7 +324,8 @@ async function getCreateNftInstruction(
 
   // NFT metadata
   const nft = {
-    uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
+    uri: "https://arweave.net/6kjuB7_jTGH7V5MotVdpDKMekWgjS_AShd193Z9mzew",
+    // uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
     name: "SANDSTORM",
     symbol: "LAMPORTDAO",
   }
