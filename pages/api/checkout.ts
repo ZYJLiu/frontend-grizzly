@@ -126,9 +126,13 @@ async function post(
   let dataString = await redis.get(id)
   let dataJson = JSON.parse(dataString!)
   console.log(dataJson)
+  console.log("receiver", dataJson.receiver)
+  console.log("reference", dataJson.reference)
+  console.log("amount", dataJson.amount)
+  console.log("orderId", dataJson.orderId)
 
   // Check if active checkout exists
-  if (data.receiver === "" || data.reference === "") {
+  if (dataJson.receiver === "" || dataJson.reference === "") {
     res.status(200).json({
       transaction: "",
       message: `No active checkout at terminal ${id}`,
@@ -141,10 +145,10 @@ async function post(
     console.time("buildTransaction")
     const postResponse = await buildTransaction(
       new PublicKey(account),
-      new PublicKey(data.receiver),
-      new PublicKey(data.reference),
-      Number(data.amount),
-      data.orderId
+      new PublicKey(dataJson.receiver),
+      new PublicKey(dataJson.reference),
+      Number(dataJson.amount),
+      dataJson.orderId
     )
     console.timeEnd("buildTransaction")
     res.status(200).json(postResponse)
