@@ -84,8 +84,8 @@ export default async function handler(
 // Handles GET request
 function get(res: NextApiResponse<GetResponse>) {
   res.status(200).json({
-    label: "My Store",
-    icon: "https://solana.com/src/img/branding/solanaLogoMark.svg",
+    label: "SANDSTORM",
+    icon: "https://arweave.net/esxvpuoKv02cFpJWgsHGxiu31vqB_UPKR_yaFT_RwoE",
   })
 }
 
@@ -185,6 +185,7 @@ async function buildTransaction(
   if (!nftDiscountExists) {
     // Create NFT instruction needs extra compute units
     // This was causing the transaction to fail
+    // Unsure why sometimes transaction worked and sometimes it didn't
     const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
       units: 400_000,
     })

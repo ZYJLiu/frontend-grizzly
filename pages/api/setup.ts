@@ -40,8 +40,8 @@ export default async function handler(
 
 function get(res: NextApiResponse<GetResponse>) {
   res.status(200).json({
-    label: "Store Name",
-    icon: "https://solana.com/src/img/branding/solanaLogoMark.svg",
+    label: "SANDSTORM",
+    icon: "https://arweave.net/esxvpuoKv02cFpJWgsHGxiu31vqB_UPKR_yaFT_RwoE",
   })
 }
 
