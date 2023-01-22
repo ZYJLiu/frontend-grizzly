@@ -2,8 +2,18 @@
 // Checks if wallet holds "discount" NFT, and if so, applies 10% discount and updates Square order
 // If wallet does not hold "discount" NFT, add instruction to mint "discount" NFT to wallet
 import { NextApiRequest, NextApiResponse } from "next"
-import { PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js"
-import { getAssociatedTokenAddress, getMint } from "@solana/spl-token"
+import {
+  ComputeBudgetProgram,
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js"
+import {
+  getAssociatedTokenAddress,
+  getAssociatedTokenAddressSync,
+  getMint,
+} from "@solana/spl-token"
 import { BN, Instruction, Program } from "@project-serum/anchor"
 import { connection, program, auth } from "../../utils/setup"
 import { redis } from "../../utils/redis"
@@ -128,6 +138,7 @@ async function post(
 
   try {
     // Build the transaction
+    console.time("buildTransaction")
     const postResponse = await buildTransaction(
       new PublicKey(account),
       new PublicKey(data.receiver),
@@ -135,6 +146,7 @@ async function post(
       Number(data.amount),
       data.orderId
     )
+    console.timeEnd("buildTransaction")
     res.status(200).json(postResponse)
   } catch (error) {
     console.error(error)
@@ -149,6 +161,15 @@ async function buildTransaction(
   amount: number,
   orderId: string
 ): Promise<PostResponse> {
+  // Discount NFT mint address (hardcoded for demo)
+  const discountCollectionMint = new PublicKey(
+    "GuGuSFXcdjMJyfHxsD5tZkZYiX45jieXHqFrfKoH8TdU"
+  )
+
+  // Check for NFT discounts
+  const { paymentAmount, message, nftDiscountExists } =
+    await checkForDiscountNft(account, amount, orderId, discountCollectionMint)
+
   // Get the latest blockhash
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash()
@@ -160,28 +181,24 @@ async function buildTransaction(
     feePayer: account,
   })
 
-  // Discount NFT mint address (hardcoded for demo)
-  const discountSftMint = new PublicKey(
-    "5ThcxUNWHNjM7JtfpeMYDifhrtksSgMXNjJDSkrXvZyv"
-  )
-
-  // Check for NFT discounts
-  const { paymentAmount, message, nftDiscountExists } = await checkDiscountNft(
-    account,
-    amount,
-    orderId,
-    discountSftMint
-  )
-
-  // If NFT discount does not exist, mint one
+  const nftMint = Keypair.generate()
   if (!nftDiscountExists) {
-    const mintInstruction = await getMintInstruction(
+    // Create NFT instruction needs extra compute units
+    const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+      units: 275_000,
+    })
+
+    // Get the create NFT instruction
+    const createNftInstruction = await getCreateNftInstruction(
       program,
       account,
-      discountSftMint,
+      nftMint,
+      discountCollectionMint,
       auth
     )
-    transaction.add(mintInstruction)
+
+    // Add the instructions to the transaction
+    transaction.add(modifyComputeUnits, createNftInstruction)
   }
 
   // USDC-dev mint
@@ -200,6 +217,11 @@ async function buildTransaction(
   // Add the transfer instruction to the transaction
   transaction.add(transferInstruction)
 
+  if (!nftDiscountExists) {
+    // nftMint needs to sign the transaction when creating a new NFT
+    transaction.sign(nftMint)
+  }
+
   // Serialize the transaction
   const serializedTransaction = transaction.serialize({
     requireAllSignatures: false, // wallet has to sign
@@ -213,11 +235,11 @@ async function buildTransaction(
   }
 }
 
-async function checkDiscountNft(
+async function checkForDiscountNft(
   account: PublicKey,
   amount: number,
   orderId: string,
-  discountSftMint: PublicKey
+  discountCollectionMint: PublicKey
 ): Promise<{
   paymentAmount: number
   message: string
@@ -231,18 +253,17 @@ async function checkDiscountNft(
   let paymentAmount = amount
   let message = `Amount $${paymentAmount}`
 
-  console.log("nfts", nfts)
-  // Find NFTs with specific mintAddress
-  // Todo: reimplement with actual NFTs, temporary use SFT
-  // Broken if user mints a second token before first transaction is finialized
+  // Check if NFT with specific collection exists
   const nftDiscountExists = nfts.find(
-    // @ts-ignore
-    (nft) => nft.mintAddress.toString() === discountSftMint.toString()
+    (nft) =>
+      nft.collection?.address.toString() === discountCollectionMint.toString()
   )
 
-  // If NFT with specific mintAddress exists
+  // If NFT with specific collection exists
   if (nftDiscountExists) {
     console.log("nft found")
+
+    // Apply 10% discount
     paymentAmount = Math.round(paymentAmount * 0.9 * 100) / 100
     console.log("paymentAmount", paymentAmount)
 
@@ -278,27 +299,60 @@ async function checkDiscountNft(
   }
 }
 
-async function getMintInstruction(
+async function getCreateNftInstruction(
   program: Program<AnchorMisc>,
   account: PublicKey,
-  discountSftMint: PublicKey,
+  nftMint: Keypair,
+  discountCollectionMint: PublicKey,
   auth: PublicKey
 ): Promise<TransactionInstruction> {
-  // Get the associated token address
-  const tokenAddress = await getAssociatedTokenAddress(discountSftMint, account)
+  // Get the metadata and master edition PDAs of the NFT
+  const metaplex = Metaplex.make(connection)
+  const [
+    metadataPDA,
+    masterEditionPDA,
+    collectionMetadataPDA,
+    collectionMasterEditionPDA,
+    tokenAccount,
+  ] = await Promise.all([
+    metaplex.nfts().pdas().metadata({ mint: nftMint.publicKey }),
+    metaplex.nfts().pdas().masterEdition({ mint: nftMint.publicKey }),
+    metaplex.nfts().pdas().metadata({ mint: discountCollectionMint }),
+    metaplex.nfts().pdas().masterEdition({ mint: discountCollectionMint }),
+    getAssociatedTokenAddress(nftMint.publicKey, account),
+  ])
 
-  // Create instruction for minting the token
-  const mintInstruction = await program.methods
-    .mint()
+  // NFT metadata
+  const nft = {
+    uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
+    name: "SANDSTORM",
+    symbol: "LAMPORTDAO",
+  }
+
+  // Program ID for the token metadata
+  const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
+    "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+  )
+
+  // Create the instruction for minting new NFT to the collection
+  const createNftInstruction = await program.methods
+    .createNftInCollection(nft.uri, nft.name, nft.symbol)
     .accounts({
-      mint: discountSftMint, // Mint address of the NFT that gives the discount
-      tokenAccount: tokenAddress, // Receipient associated token address
-      auth: auth, // Mint authority PDA
-      receipient: account, // Wallet receiving the NFT
-      payer: account, // Payer
+      mint: nftMint.publicKey,
+      metadata: metadataPDA,
+      masterEdition: masterEditionPDA,
+      collectionMint: discountCollectionMint,
+      collectionMetadata: collectionMetadataPDA,
+      collectionMasterEdition: collectionMasterEditionPDA,
+      auth: auth,
+      tokenAccount: tokenAccount,
+      user: account,
+      payer: account,
+      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
     })
     .instruction()
-  return mintInstruction
+
+  return createNftInstruction
 }
 
 async function getTransferInstruction(
@@ -313,10 +367,11 @@ async function getTransferInstruction(
   const mintData = await getMint(connection, mint)
   // Adjust the payment amount based on the mint's decimals
   const adjustedAmount = paymentAmount * 10 ** mintData.decimals
-  // Get the associated token address for the sender account
-  const senderTokenAccount = await getAssociatedTokenAddress(mint, account)
-  // Get the associated token address for the receiver
-  const receiverTokenAccount = await getAssociatedTokenAddress(mint, receiver)
+  // Get the associated token addresses for the sender and receiver accounts
+  const [senderTokenAccount, receiverTokenAccount] = await Promise.all([
+    getAssociatedTokenAddress(mint, account),
+    getAssociatedTokenAddress(mint, receiver),
+  ])
 
   // Create instruction for token transfer
   const instruction = await program.methods
@@ -340,3 +395,38 @@ async function getTransferInstruction(
   // Return the instruction
   return instruction
 }
+
+// // If NFT discount does not exist, mint one
+// // Used SFT to test, replaced with NFT, but is slower
+// if (!nftDiscountExists) {
+//   const mintInstruction = await getMintInstruction(
+//     program,
+//     account,
+//     discountSftMint,
+//     auth
+//   )
+//   transaction.add(mintInstruction)
+// }
+
+// async function getMintInstruction(
+//   program: Program<AnchorMisc>,
+//   account: PublicKey,
+//   discountSftMint: PublicKey,
+//   auth: PublicKey
+// ): Promise<TransactionInstruction> {
+//   // Get the associated token address
+//   const tokenAddress = await getAssociatedTokenAddress(discountSftMint, account)
+
+//   // Create instruction for minting the token
+//   const mintInstruction = await program.methods
+//     .mint()
+//     .accounts({
+//       mint: discountSftMint, // Mint address of the NFT that gives the discount
+//       tokenAccount: tokenAddress, // Receipient associated token address
+//       auth: auth, // Mint authority PDA
+//       receipient: account, // Wallet receiving the NFT
+//       payer: account, // Payer
+//     })
+//     .instruction()
+//   return mintInstruction
+// }

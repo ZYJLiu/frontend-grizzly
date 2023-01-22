@@ -5,6 +5,197 @@ export type AnchorMisc = {
   name: "anchor_misc"
   instructions: [
     {
+      name: "createNft"
+      accounts: [
+        {
+          name: "mint"
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: "metadata"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "masterEdition"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "auth"
+          isMut: true
+          isSigner: false
+          pda: {
+            seeds: [
+              {
+                kind: "const"
+                type: "string"
+                value: "auth"
+              }
+            ]
+          }
+        },
+        {
+          name: "tokenAccount"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "user"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "payer"
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: "tokenProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "associatedTokenProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "rent"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "systemProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "tokenMetadataProgram"
+          isMut: false
+          isSigner: false
+        }
+      ]
+      args: [
+        {
+          name: "uri"
+          type: "string"
+        },
+        {
+          name: "name"
+          type: "string"
+        },
+        {
+          name: "symbol"
+          type: "string"
+        }
+      ]
+    },
+    {
+      name: "createNftInCollection"
+      accounts: [
+        {
+          name: "mint"
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: "metadata"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "masterEdition"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "collectionMint"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "collectionMetadata"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "collectionMasterEdition"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "auth"
+          isMut: true
+          isSigner: false
+          pda: {
+            seeds: [
+              {
+                kind: "const"
+                type: "string"
+                value: "auth"
+              }
+            ]
+          }
+        },
+        {
+          name: "tokenAccount"
+          isMut: true
+          isSigner: false
+        },
+        {
+          name: "user"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "payer"
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: "tokenProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "associatedTokenProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "rent"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "systemProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "tokenMetadataProgram"
+          isMut: false
+          isSigner: false
+        }
+      ]
+      args: [
+        {
+          name: "uri"
+          type: "string"
+        },
+        {
+          name: "name"
+          type: "string"
+        },
+        {
+          name: "symbol"
+          type: "string"
+        }
+      ]
+    },
+    {
       name: "tokenTransfer"
       accounts: [
         {
@@ -246,6 +437,197 @@ export const IDL: AnchorMisc = {
   version: "0.1.0",
   name: "anchor_misc",
   instructions: [
+    {
+      name: "createNft",
+      accounts: [
+        {
+          name: "mint",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "metadata",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "masterEdition",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "auth",
+          isMut: true,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: "const",
+                type: "string",
+                value: "auth",
+              },
+            ],
+          },
+        },
+        {
+          name: "tokenAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "user",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "payer",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "associatedTokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "rent",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "systemProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "tokenMetadataProgram",
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: "uri",
+          type: "string",
+        },
+        {
+          name: "name",
+          type: "string",
+        },
+        {
+          name: "symbol",
+          type: "string",
+        },
+      ],
+    },
+    {
+      name: "createNftInCollection",
+      accounts: [
+        {
+          name: "mint",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "metadata",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "masterEdition",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "collectionMint",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "collectionMetadata",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "collectionMasterEdition",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "auth",
+          isMut: true,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: "const",
+                type: "string",
+                value: "auth",
+              },
+            ],
+          },
+        },
+        {
+          name: "tokenAccount",
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: "user",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "payer",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "tokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "associatedTokenProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "rent",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "systemProgram",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "tokenMetadataProgram",
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: "uri",
+          type: "string",
+        },
+        {
+          name: "name",
+          type: "string",
+        },
+        {
+          name: "symbol",
+          type: "string",
+        },
+      ],
+    },
     {
       name: "tokenTransfer",
       accounts: [
