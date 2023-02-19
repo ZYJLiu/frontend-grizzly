@@ -30,6 +30,9 @@ const Navbar = () => {
           <MenuItem as={Link} href="/">
             Home
           </MenuItem>
+          <MenuItem as={Link} href="/merchant">
+            Merchant Page
+          </MenuItem>
           {terminals.map((terminal) => (
             <MenuItem
               as={Link}
@@ -43,7 +46,9 @@ const Navbar = () => {
       </Menu>
 
       <Spacer />
-      {router.pathname === "/" && <WalletMultiButton />}
+      {(router.pathname === "/" || router.pathname === "/merchant") && (
+        <WalletMultiButton />
+      )}
     </Flex>
   )
 }

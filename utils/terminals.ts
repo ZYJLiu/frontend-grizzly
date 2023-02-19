@@ -2,7 +2,7 @@
 import { Keypair } from "@solana/web3.js"
 
 // However many terminals you want to create, change the number in the function call
-export const terminals = createTerminalsArray(10)
+export const terminals = createTerminalsArray(3)
 
 // Function that creates an array of terminals with a specified number of terminals
 function createTerminalsArray(numTerminals: number) {
