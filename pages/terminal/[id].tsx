@@ -24,6 +24,10 @@ import {
   Spinner,
   Card,
   CardBody,
+  Switch,
+  FormControl,
+  FormLabel,
+  Flex,
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useRouter } from "next/router"
@@ -79,6 +83,10 @@ export default function Terminal() {
 
   // SquareAPI payment detail to display
   const [resultPayment, setResultPayment] = useState<Payment | null>(null)
+
+  // Toggle redeem loyalty points at checkout
+  const [isChecked, setIsChecked] = useState(false)
+  const toggleSwitch = () => setIsChecked(!isChecked)
 
   // Fetch catalog from SquareAPI
   const fetchCatalog = async () => {
@@ -220,6 +228,7 @@ export default function Terminal() {
     setResultOrder(null)
     setOrderDetail(null)
     setResultPayment(null)
+    setIsChecked(false)
     reset()
   }
 
@@ -281,7 +290,7 @@ export default function Terminal() {
                             width={20}
                             step={1}
                             min={0}
-                            max={30}
+                            // max={30}
                             value={quantities[item.variationId] || 0}
                             onChange={(event) =>
                               handleChange(event, item.variationId)
@@ -361,22 +370,38 @@ export default function Terminal() {
                   </Tr>
                   <Tr>
                     <Td textAlign="center" colSpan={3}>
-                      <VStack>
-                        <Button
-                          onClick={() => {
-                            if (connected) {
-                              handleCreateOrder()
-                              onOpen()
-                              setIsLoading(true)
-                            } else {
-                              alert("Connect Wallet")
-                            }
-                          }}
-                        >
-                          Solana Pay
-                        </Button>
-                        <Button onClick={resetState}>Reset</Button>
-                      </VStack>
+                      <Flex justifyContent="center">
+                        <VStack>
+                          <FormControl
+                            display="flex"
+                            alignItems="center"
+                            mb="1"
+                          >
+                            <FormLabel htmlFor="toggleSwitch" mb="0">
+                              Redeem Reward Points
+                            </FormLabel>
+                            <Switch
+                              size="md"
+                              isChecked={isChecked}
+                              onChange={toggleSwitch}
+                            />
+                          </FormControl>
+                          <Button
+                            onClick={() => {
+                              if (connected) {
+                                handleCreateOrder()
+                                onOpen()
+                                setIsLoading(true)
+                              } else {
+                                alert("Connect Wallet")
+                              }
+                            }}
+                          >
+                            Solana Pay
+                          </Button>
+                          <Button onClick={resetState}>Reset</Button>
+                        </VStack>
+                      </Flex>
                     </Td>
                   </Tr>
                 </Tbody>
@@ -396,6 +421,8 @@ export default function Terminal() {
           id={id}
           orderId={orderDetail?.orderId as string}
           isLoading={isLoading}
+          isChecked={isChecked}
+          setIsChecked={setIsChecked}
         />
       )}
 

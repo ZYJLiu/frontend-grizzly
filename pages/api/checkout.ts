@@ -10,6 +10,8 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js"
 import {
+  createBurnInstruction,
+  getAccount,
   getAssociatedTokenAddress,
   getAssociatedTokenAddressSync,
   getMint,
@@ -30,14 +32,6 @@ const client = new Client({
 //@ts-ignore
 BigInt.prototype.toJSON = function () {
   return this.toString()
-}
-
-// transaction data
-let data = {
-  receiver: "",
-  reference: "",
-  amount: "",
-  orderId: "",
 }
 
 type InputData = {
@@ -105,10 +99,12 @@ async function post(
 
   // Check if the request is for updating data
   if (req.query.path === "update-data") {
-    data = { ...data, ...req.body }
+    let data = req.body
     console.log(data)
+
     // Update the data in Redis
     await redis.set(id, JSON.stringify(data))
+
     res.json({ success: true })
     return
   }
@@ -148,7 +144,8 @@ async function post(
       new PublicKey(dataJson.receiver),
       new PublicKey(dataJson.reference),
       Number(dataJson.amount),
-      dataJson.orderId
+      dataJson.orderId,
+      dataJson.isChecked
     )
     console.timeEnd("buildTransaction")
     res.status(200).json(postResponse)
@@ -163,7 +160,8 @@ async function buildTransaction(
   receiver: PublicKey,
   reference: PublicKey,
   amount: number,
-  orderId: string
+  orderId: string,
+  isChecked: boolean
 ): Promise<PostResponse> {
   const [merchantPDA] = PublicKey.findProgramAddressSync(
     [Buffer.from("MERCHANT"), receiver.toBuffer()],
@@ -173,13 +171,15 @@ async function buildTransaction(
   const merchantAccount = await program.account.merchantState.fetch(merchantPDA)
 
   // Check for NFT discounts
-  const { paymentAmount, message, nftDiscountExists } =
+  const { paymentAmount, message, nftDiscountExists, rewardRedeemed } =
     await checkForDiscountNft(
       account,
       amount,
       orderId,
       merchantAccount.loyaltyCollectionMint,
-      merchantAccount.loyaltyDiscountBasisPoints
+      merchantAccount.loyaltyDiscountBasisPoints,
+      merchantAccount.rewardPointsMint,
+      isChecked
     )
 
   // Get the latest blockhash
@@ -212,6 +212,23 @@ async function buildTransaction(
 
     // Add the instructions to the transaction
     transaction.add(modifyComputeUnits, createNftInstruction)
+  }
+
+  if (rewardRedeemed != 0) {
+    const tokenAddress = await getAssociatedTokenAddress(
+      merchantAccount.rewardPointsMint,
+      account
+    )
+    const mintData = await getMint(connection, merchantAccount.rewardPointsMint)
+
+    const burnInstruction = createBurnInstruction(
+      tokenAddress,
+      merchantAccount.rewardPointsMint,
+      account,
+      rewardRedeemed * 10 ** mintData.decimals
+    )
+
+    transaction.add(burnInstruction)
   }
 
   // USDC-dev mint
@@ -255,9 +272,12 @@ async function checkForDiscountNft(
   amount: number,
   orderId: string,
   discountCollectionMint: PublicKey,
-  loyaltyDiscountBasisPoints: number
+  loyaltyDiscountBasisPoints: number,
+  rewardPointsMint: PublicKey,
+  isChecked: boolean
 ): Promise<{
   paymentAmount: number
+  rewardRedeemed: number
   message: string
   nftDiscountExists: any
 }> {
@@ -267,7 +287,32 @@ async function checkForDiscountNft(
   // Find all NFTs owned by the account
   const nfts = await metaplex.nfts().findAllByOwner({ owner: account })
   let paymentAmount = amount
-  let message = `Amount $${paymentAmount}`
+  let message = `Checkout Amount $${paymentAmount}`
+
+  // TODO: fix
+  let rewardRedeemed = 0
+  if (isChecked) {
+    try {
+      const tokenAddress = await getAssociatedTokenAddress(
+        rewardPointsMint,
+        account
+      )
+      const tokenAccount = await getAccount(connection, tokenAddress)
+      const mintData = await getMint(connection, rewardPointsMint)
+      const tokenBalance =
+        Math.floor(
+          (Number(tokenAccount.amount) / 10 ** mintData.decimals) * 100
+        ) / 100
+      console.log(tokenBalance)
+      rewardRedeemed = Math.min(paymentAmount, tokenBalance)
+      paymentAmount = Math.max(paymentAmount - tokenBalance, 0)
+      console.log(rewardRedeemed)
+      console.log(paymentAmount)
+      message += `, Redeemed ${rewardRedeemed} Reward Tokens`
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   // Check if NFT with specific collection exists
   const nftDiscountExists = nfts.find(
@@ -284,7 +329,7 @@ async function checkForDiscountNft(
     paymentAmount = Math.round(paymentAmount * (1 - discount) * 100) / 100
     console.log("paymentAmount", paymentAmount)
 
-    // Update Square Order with 10% discount
+    // Update Square Order with discount
     try {
       const location = await client.locationsApi.listLocations()
 
@@ -300,6 +345,19 @@ async function checkForDiscountNft(
                 percentage: discount.toString(),
                 scope: "ORDER",
               },
+              {
+                name: "Reward Token Redeemed",
+                type: "FIXED_AMOUNT",
+                amountMoney: {
+                  amount: BigInt(rewardRedeemed * 100),
+                  currency: "USD",
+                },
+                appliedMoney: {
+                  amount: BigInt(rewardRedeemed * 100),
+                  currency: "USD",
+                },
+                scope: "ORDER",
+              },
             ],
             version: 1,
           },
@@ -307,14 +365,18 @@ async function checkForDiscountNft(
         })
       }
     } catch (e) {}
-    message = `Amount $${paymentAmount}, Applied ${
-      discount * 100
-    }% NFT Discount!`
+    message += `, Applied ${discount * 100}% NFT Discount`
   }
+
+  if (rewardRedeemed != 0 || nftDiscountExists) {
+    message += `, Final Amount $${paymentAmount}`
+  }
+
   return {
     paymentAmount,
     message,
     nftDiscountExists,
+    rewardRedeemed,
   }
 }
 
@@ -340,6 +402,7 @@ async function getCreateNftInstruction(
     collectionMetadataPDA,
     collectionMasterEditionPDA,
     tokenAccount,
+    nft,
   ] = await Promise.all([
     metaplex.nfts().pdas().metadata({ mint: customerNftPDA }),
     metaplex.nfts().pdas().masterEdition({ mint: customerNftPDA }),
@@ -352,15 +415,18 @@ async function getCreateNftInstruction(
       .pdas()
       .masterEdition({ mint: merchantAccount.loyaltyCollectionMint }),
     getAssociatedTokenAddress(customerNftPDA, account),
+    metaplex
+      .nfts()
+      .findByMint({ mintAddress: merchantAccount.loyaltyCollectionMint }),
   ])
 
-  // NFT metadata
-  const nft = {
-    uri: "https://arweave.net/6kjuB7_jTGH7V5MotVdpDKMekWgjS_AShd193Z9mzew",
-    // uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
-    name: "GRIZZLY",
-    symbol: "GRIZZLY",
-  }
+  // // NFT metadata
+  // const nft = {
+  //   uri: "https://arweave.net/6kjuB7_jTGH7V5MotVdpDKMekWgjS_AShd193Z9mzew",
+  //   // uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
+  //   name: "GRIZZLY",
+  //   symbol: "GRIZZLY",
+  // }
 
   // Program ID for the token metadata
   const TOKEN_METADATA_PROGRAM_ID = new PublicKey(

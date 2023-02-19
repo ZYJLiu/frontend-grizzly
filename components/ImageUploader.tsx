@@ -28,25 +28,23 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [loading, setLoading] = useState(false)
 
   // upload image
-  const handleImage = useCallback(
-    async (event: any) => {
-      setLoading(true)
-      try {
-        const file: MetaplexFile = await toMetaplexFileFromBrowser(
-          event.target.files[0]
-        )
-        const imageUrl = await metaplex.storage().upload(file)
-        console.log("image:", imageUrl)
-        setImageUrl(imageUrl)
-        setLoading(false)
-      } catch (e) {
-        console.log(e)
-        setLoading(false)
-      }
+  const handleImage = async (event: any) => {
+    console.log("test")
+    setLoading(true)
+    try {
+      const file: MetaplexFile = await toMetaplexFileFromBrowser(
+        event.target.files[0]
+      )
+      const imageUrl = await metaplex.storage().upload(file)
+      console.log("image:", imageUrl)
+      setImageUrl(imageUrl)
       setLoading(false)
-    },
-    [metaplex, setImageUrl]
-  )
+    } catch (e) {
+      console.log(e)
+      setLoading(false)
+    }
+    setLoading(false)
+  }
 
   return (
     <Container centerContent my="5">

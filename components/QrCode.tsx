@@ -22,6 +22,8 @@ interface Props {
   id: string
   orderId: string
   isLoading: boolean
+  isChecked: boolean
+  setIsChecked: (isChecked: boolean) => void
 }
 
 const QrModal = ({
@@ -32,10 +34,14 @@ const QrModal = ({
   id,
   orderId,
   isLoading,
+  isChecked,
+  setIsChecked,
 }: Props) => {
   const qrRef = useRef<HTMLDivElement>(null)
   const [reference, setReference] = useState(Keypair.generate().publicKey)
   const { publicKey } = useWallet()
+
+  console.log(isChecked)
 
   // Size Modal
   const [size, setSize] = useState(() =>
@@ -65,6 +71,7 @@ const QrModal = ({
       reference: reference ? reference.toString() : "",
       amount: value ? value.toString() : "",
       orderId: orderId ? orderId : "",
+      isChecked: isChecked || false,
     }
 
     axios
@@ -172,6 +179,7 @@ const QrModal = ({
         color="gray"
         onClick={() => {
           setConfirmed(false)
+          setIsChecked(false)
           onClose()
         }}
       >

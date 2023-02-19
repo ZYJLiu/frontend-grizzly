@@ -18,6 +18,10 @@ const burnerKeypair = Keypair.fromSecretKey(Uint8Array.from(burner))
 
 const airdrop = async () => {
   console.log(burnerKeypair.publicKey)
+
+  console.log(
+    (await connection.getBalance(burnerKeypair.publicKey)) / LAMPORTS_PER_SOL
+  )
   try {
     await connection.requestAirdrop(burnerKeypair.publicKey, LAMPORTS_PER_SOL)
   } catch (e) {
@@ -25,7 +29,7 @@ const airdrop = async () => {
   }
 }
 
-airdrop()
+// airdrop()
 
 export const metaplex = new Metaplex(connection)
   .use(
