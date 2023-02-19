@@ -14,13 +14,13 @@ import {
   getAssociatedTokenAddressSync,
   getMint,
 } from "@solana/spl-token"
-import { BN, Program } from "@project-serum/anchor"
-import { connection, program } from "../../utils/anchor-grizzly"
+import { BN, Instruction, Program } from "@project-serum/anchor"
+import { connection, program, auth } from "../../utils/setup"
 import { redis } from "../../utils/redis"
 import { Metaplex } from "@metaplex-foundation/js"
 import { randomUUID } from "crypto"
 import { Client, Environment } from "square"
-import { AnchorGrizzly } from "@/idl/anchor_grizzly"
+import { AnchorMisc } from "@/idl/anchor_misc"
 
 const client = new Client({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,
@@ -165,22 +165,14 @@ async function buildTransaction(
   amount: number,
   orderId: string
 ): Promise<PostResponse> {
-  const [merchantPDA] = PublicKey.findProgramAddressSync(
-    [Buffer.from("MERCHANT"), receiver.toBuffer()],
-    program.programId
+  // Discount NFT mint address (hardcoded for demo)
+  const discountCollectionMint = new PublicKey(
+    "GuGuSFXcdjMJyfHxsD5tZkZYiX45jieXHqFrfKoH8TdU"
   )
-
-  const merchantAccount = await program.account.merchantState.fetch(merchantPDA)
 
   // Check for NFT discounts
   const { paymentAmount, message, nftDiscountExists } =
-    await checkForDiscountNft(
-      account,
-      amount,
-      orderId,
-      merchantAccount.loyaltyCollectionMint,
-      merchantAccount.loyaltyDiscountBasisPoints
-    )
+    await checkForDiscountNft(account, amount, orderId, discountCollectionMint)
 
   // Get the latest blockhash
   const { blockhash, lastValidBlockHeight } =
@@ -193,6 +185,7 @@ async function buildTransaction(
     feePayer: account,
   })
 
+  const nftMint = Keypair.generate()
   if (!nftDiscountExists) {
     // Create NFT instruction needs extra compute units
     // This was causing the transaction to fail
@@ -205,9 +198,9 @@ async function buildTransaction(
     const createNftInstruction = await getCreateNftInstruction(
       program,
       account,
-      receiver,
-      merchantPDA,
-      merchantAccount
+      nftMint,
+      discountCollectionMint,
+      auth
     )
 
     // Add the instructions to the transaction
@@ -222,20 +215,18 @@ async function buildTransaction(
     program,
     account,
     receiver,
-    merchantPDA,
     mint,
     paymentAmount,
-    reference,
-    merchantAccount.rewardPointsMint
+    reference
   )
 
   // Add the transfer instruction to the transaction
   transaction.add(transferInstruction)
 
-  // if (!nftDiscountExists) {
-  //   // nftMint needs to sign the transaction when creating a new NFT
-  //   transaction.sign(nftMint)
-  // }
+  if (!nftDiscountExists) {
+    // nftMint needs to sign the transaction when creating a new NFT
+    transaction.sign(nftMint)
+  }
 
   // Serialize the transaction
   const serializedTransaction = transaction.serialize({
@@ -254,8 +245,7 @@ async function checkForDiscountNft(
   account: PublicKey,
   amount: number,
   orderId: string,
-  discountCollectionMint: PublicKey,
-  loyaltyDiscountBasisPoints: number
+  discountCollectionMint: PublicKey
 ): Promise<{
   paymentAmount: number
   message: string
@@ -279,9 +269,8 @@ async function checkForDiscountNft(
   if (nftDiscountExists) {
     console.log("nft found")
 
-    // Apply discount % to payment amount
-    const discount = loyaltyDiscountBasisPoints / 10000
-    paymentAmount = Math.round(paymentAmount * (1 - discount) * 100) / 100
+    // Apply 10% discount
+    paymentAmount = Math.round(paymentAmount * 0.9 * 100) / 100
     console.log("paymentAmount", paymentAmount)
 
     // Update Square Order with 10% discount
@@ -297,7 +286,7 @@ async function checkForDiscountNft(
             discounts: [
               {
                 name: "NFT Holder",
-                percentage: discount.toString(),
+                percentage: "10",
                 scope: "ORDER",
               },
             ],
@@ -307,9 +296,7 @@ async function checkForDiscountNft(
         })
       }
     } catch (e) {}
-    message = `Amount $${paymentAmount}, Applied ${
-      discount * 100
-    }% NFT Discount!`
+    message = `Amount $${paymentAmount}, Applied 10% NFT Discount!`
   }
   return {
     paymentAmount,
@@ -319,21 +306,14 @@ async function checkForDiscountNft(
 }
 
 async function getCreateNftInstruction(
-  program: Program<AnchorGrizzly>,
+  program: Program<AnchorMisc>,
   account: PublicKey,
-  authority: PublicKey,
-  merchantPDA: PublicKey,
-  merchantAccount: any
+  nftMint: Keypair,
+  discountCollectionMint: PublicKey,
+  auth: PublicKey
 ): Promise<TransactionInstruction> {
   // Get the metadata and master edition PDAs of the NFTs
   const metaplex = Metaplex.make(connection)
-
-  // merchant loyalty nft collection mint
-  const [customerNftPDA] = PublicKey.findProgramAddressSync(
-    [Buffer.from("LOYALTY_NFT"), merchantPDA.toBuffer(), account.toBuffer()],
-    program.programId
-  )
-
   const [
     metadataPDA,
     masterEditionPDA,
@@ -341,25 +321,19 @@ async function getCreateNftInstruction(
     collectionMasterEditionPDA,
     tokenAccount,
   ] = await Promise.all([
-    metaplex.nfts().pdas().metadata({ mint: customerNftPDA }),
-    metaplex.nfts().pdas().masterEdition({ mint: customerNftPDA }),
-    metaplex
-      .nfts()
-      .pdas()
-      .metadata({ mint: merchantAccount.loyaltyCollectionMint }),
-    metaplex
-      .nfts()
-      .pdas()
-      .masterEdition({ mint: merchantAccount.loyaltyCollectionMint }),
-    getAssociatedTokenAddress(customerNftPDA, account),
+    metaplex.nfts().pdas().metadata({ mint: nftMint.publicKey }),
+    metaplex.nfts().pdas().masterEdition({ mint: nftMint.publicKey }),
+    metaplex.nfts().pdas().metadata({ mint: discountCollectionMint }),
+    metaplex.nfts().pdas().masterEdition({ mint: discountCollectionMint }),
+    getAssociatedTokenAddress(nftMint.publicKey, account),
   ])
 
   // NFT metadata
   const nft = {
     uri: "https://arweave.net/6kjuB7_jTGH7V5MotVdpDKMekWgjS_AShd193Z9mzew",
     // uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
-    name: "GRIZZLY",
-    symbol: "GRIZZLY",
+    name: "SANDSTORM",
+    symbol: "LAMPORTDAO",
   }
 
   // Program ID for the token metadata
@@ -371,16 +345,16 @@ async function getCreateNftInstruction(
   const createNftInstruction = await program.methods
     .createNftInCollection(nft.uri, nft.name, nft.symbol)
     .accounts({
-      customer: account,
-      authority: authority,
-      merchant: merchantPDA,
-      loyaltyCollectionMint: merchantAccount.loyaltyCollectionMint,
-      collectionMetadataAccount: collectionMetadataPDA,
-      collectionMasterEdition: collectionMasterEditionPDA,
-      customerNftMint: customerNftPDA,
-      metadataAccount: metadataPDA,
+      mint: nftMint.publicKey,
+      metadata: metadataPDA,
       masterEdition: masterEditionPDA,
+      collectionMint: discountCollectionMint,
+      collectionMetadata: collectionMetadataPDA,
+      collectionMasterEdition: collectionMasterEditionPDA,
+      auth: auth,
       tokenAccount: tokenAccount,
+      user: account,
+      payer: account,
       tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
     })
     .instruction()
@@ -389,37 +363,32 @@ async function getCreateNftInstruction(
 }
 
 async function getTransferInstruction(
-  program: Program<AnchorGrizzly>,
+  program: Program<AnchorMisc>,
   account: PublicKey,
   receiver: PublicKey,
-  merchantPDA: PublicKey,
   mint: PublicKey,
   paymentAmount: number,
-  reference: PublicKey,
-  rewardPointsMint: PublicKey
+  reference: PublicKey
 ): Promise<TransactionInstruction> {
   // Get the mint information for the specific mint
   const mintData = await getMint(connection, mint)
   // Adjust the payment amount based on the mint's decimals
   const adjustedAmount = paymentAmount * 10 ** mintData.decimals
   // Get the associated token addresses for the sender and receiver accounts
-  const [senderTokenAccount, receiverTokenAccount, customerRewardTokenAccount] =
-    await Promise.all([
-      getAssociatedTokenAddress(mint, account),
-      getAssociatedTokenAddress(mint, receiver),
-      getAssociatedTokenAddress(rewardPointsMint, account),
-    ])
+  const [senderTokenAccount, receiverTokenAccount] = await Promise.all([
+    getAssociatedTokenAddress(mint, account),
+    getAssociatedTokenAddress(mint, receiver),
+  ])
 
   // Create instruction for token transfer
   const instruction = await program.methods
-    .transaction(new BN(adjustedAmount))
+    .tokenTransfer(new BN(adjustedAmount))
     .accounts({
-      customer: account,
-      authority: receiver,
-      merchant: merchantPDA,
-      paymentDestination: receiverTokenAccount,
-      customerUsdcTokenAccount: senderTokenAccount,
-      customerRewardTokenAccount: customerRewardTokenAccount,
+      sender: account, // Sender public key
+      receiver: receiver, // Receiver public key
+      fromTokenAccount: senderTokenAccount, // Sender associated token address
+      toTokenAccount: receiverTokenAccount, // Receiver associated token address
+      mint: mint, // Mint address of the token
     })
     .instruction()
 
@@ -433,3 +402,38 @@ async function getTransferInstruction(
   // Return the instruction
   return instruction
 }
+
+// // If NFT discount does not exist, mint one
+// // Used SFT to test, replaced with NFT
+// if (!nftDiscountExists) {
+//   const mintInstruction = await getMintInstruction(
+//     program,
+//     account,
+//     discountSftMint,
+//     auth
+//   )
+//   transaction.add(mintInstruction)
+// }
+
+// async function getMintInstruction(
+//   program: Program<AnchorMisc>,
+//   account: PublicKey,
+//   discountSftMint: PublicKey,
+//   auth: PublicKey
+// ): Promise<TransactionInstruction> {
+//   // Get the associated token address
+//   const tokenAddress = await getAssociatedTokenAddress(discountSftMint, account)
+
+//   // Create instruction for minting the token
+//   const mintInstruction = await program.methods
+//     .mint()
+//     .accounts({
+//       mint: discountSftMint, // Mint address of the NFT that gives the discount
+//       tokenAccount: tokenAddress, // Receipient associated token address
+//       auth: auth, // Mint authority PDA
+//       receipient: account, // Wallet receiving the NFT
+//       payer: account, // Payer
+//     })
+//     .instruction()
+//   return mintInstruction
+// }
