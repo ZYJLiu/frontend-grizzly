@@ -35,15 +35,28 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
 
     // send transaction
     try {
-      const signature = await sendTransaction(tx, connection)
+      const txSig = await sendTransaction(tx, connection)
       setLoading(true)
 
-      await connection.confirmTransaction(signature, "finalized")
-      fetchData(merchantPDA)
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash()
+
+      await connection
+        .confirmTransaction(
+          {
+            blockhash,
+            lastValidBlockHeight,
+            signature: txSig,
+          },
+          "confirmed"
+        )
+        .then(() => fetchData(merchantPDA))
+        .then(() => setLoading(false))
+        .catch(() => setLoading(false))
     } catch (error) {
       console.log(`Error creating merchant account: ${error}`)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

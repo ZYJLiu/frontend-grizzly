@@ -40,24 +40,38 @@ export default function MerchantPage() {
   const [merchantState, setMerchantState] = useState<any>(null)
   const [data, setData] = useState<Array<{ label: string; value: string }>>([])
 
-  const fetchData = async (pda: PublicKey) => {
-    try {
-      const account = await program.account.merchantState.fetch(pda)
-      console.log(account)
-      setMerchantState(account)
+  const fetchData = (pda: PublicKey, isInitialCall = false) => {
+    return new Promise<void>((resolve, reject) => {
+      program.account.merchantState
+        .fetch(pda)
+        .then((account) => {
+          console.log(account)
+          setMerchantState(account)
 
-      const newData = [
-        { label: "Merchant Authority", value: account.authority.toString() },
-        {
-          label: "Payment Destiantion",
-          value: account.paymentDestination.toString(),
-        },
-      ]
-      setData(newData)
-    } catch (error) {
-      console.log(`Error fetching merchant state: ${error}`)
-    }
+          const newData = [
+            {
+              label: "Merchant Authority",
+              value: account.authority.toString(),
+            },
+            {
+              label: "Payment Destiantion",
+              value: account.paymentDestination.toString(),
+            },
+          ]
+          setData(newData)
+          resolve()
+        })
+        .catch((error) => {
+          console.log(`Error fetching merchant state: ${error}`)
+          if (isInitialCall) {
+            reject()
+          } else {
+            setTimeout(() => fetchData(pda), 1000) // Retry after 1 second
+          }
+        })
+    })
   }
+
   useEffect(() => {
     if (publicKey && program.programId) {
       const [pda] = PublicKey.findProgramAddressSync(
@@ -66,7 +80,7 @@ export default function MerchantPage() {
       )
 
       setMerchantPDA(pda)
-      fetchData(pda)
+      fetchData(pda, true)
     } else {
       setMerchantPDA(null)
       setMerchantState(null)

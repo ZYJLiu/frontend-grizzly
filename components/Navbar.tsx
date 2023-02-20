@@ -31,7 +31,7 @@ const Navbar = () => {
             Home
           </MenuItem>
           <MenuItem as={Link} href="/merchant">
-            Merchant Page
+            Merchant
           </MenuItem>
           {terminals.map((terminal) => (
             <MenuItem
