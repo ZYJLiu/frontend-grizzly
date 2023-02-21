@@ -6,6 +6,9 @@ import {
   NumberInput,
   NumberInputField,
   HStack,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
 } from "@chakra-ui/react"
 import { ComputeBudgetProgram, PublicKey, Transaction } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
@@ -40,6 +43,8 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
   const [basisPoints, setBasisPoints] = useState(0)
   const [loading, setLoading] = useState(false)
   const uriReady = useRef(false)
+
+  console.log(basisPoints)
 
   const uploadMetadata = useCallback(async () => {
     setLoading(true)
@@ -132,12 +137,20 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
             onChange={(e) => setSymbol(e.target.value)}
             placeholder="Enter symbol"
           />
-          <FormLabel mt={2}>Basis Points</FormLabel>
+          <FormLabel mt={2}>% Discount on Transaction</FormLabel>
           <NumberInput
-            value={basisPoints}
-            onChange={(value) => setBasisPoints(Number(value))}
+            onChange={(value) => setBasisPoints(Number(value) * 100)}
+            defaultValue={0}
+            min={0}
+            max={100}
+            precision={2}
+            step={0.25}
           >
-            <NumberInputField placeholder="Enter Basis Points" />
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
           </NumberInput>
         </FormControl>
       </HStack>
