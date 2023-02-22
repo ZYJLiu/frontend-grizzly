@@ -15,7 +15,6 @@ import {
   MetaplexFile,
   toMetaplexFileFromBrowser,
 } from "@metaplex-foundation/js"
-import axios from "axios"
 
 interface ImageUploaderProps {
   imageUrl: string
@@ -33,23 +32,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     console.log("test")
     setLoading(true)
     try {
-      const formData = new FormData()
-      formData.append("file", event.target.files[0])
-
-      try {
-        console.log("2")
-        const response = await axios.post("/api/aws", formData)
-
-        if (response) {
-          console.log("File uploaded successfully")
-          console.log(response.data)
-          setImageUrl(response.data.imageUri)
-        } else {
-          console.error("Error uploading file")
-        }
-      } catch (err) {
-        console.error("Error uploading file:", err)
-      }
+      const file: MetaplexFile = await toMetaplexFileFromBrowser(
+        event.target.files[0]
+      )
+      const imageUrl = await metaplex.storage().upload(file)
+      console.log("image:", imageUrl)
+      setImageUrl(imageUrl)
       setLoading(false)
     } catch (e) {
       console.log(e)

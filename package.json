@@ -14,7 +14,8 @@
     "@chakra-ui/react": "^2.5.1",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@metaplex-foundation/js": "^0.17.12",
+    "@metaplex-foundation/js": "^0.18.1",
+    "@metaplex-foundation/js-plugin-aws": "^0.18.1",
     "@next/font": "13.1.1",
     "@project-serum/anchor": "^0.26.0",
     "@solana/pay": "^0.2.4",
@@ -29,6 +30,7 @@
     "cookie": "^0.5.0",
     "eslint": "8.30.0",
     "eslint-config-next": "13.1.1",
+    "formidable": "^2.1.1",
     "framer-motion": "^9.0.4",
     "ioredis": "^5.2.4",
     "md5": "^2.3.0",
@@ -38,5 +40,8 @@
     "react-dom": "18.2.0",
     "square": "^25.0.0",
     "typescript": "4.9.4"
+  },
+  "devDependencies": {
+    "@types/formidable": "^2.0.5"
   }
 }
