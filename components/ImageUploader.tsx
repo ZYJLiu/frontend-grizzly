@@ -16,15 +16,20 @@ import {
   toMetaplexFileFromBrowser,
 } from "@metaplex-foundation/js"
 import axios from "axios"
+import { PublicKey } from "@solana/web3.js"
 
 interface ImageUploaderProps {
   imageUrl: string
   setImageUrl: (imageUrl: string) => void
+  merchantPDA: PublicKey
+  type: string
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
   imageUrl,
   setImageUrl,
+  merchantPDA,
+  type,
 }) => {
   const [loading, setLoading] = useState(false)
 
@@ -35,10 +40,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     try {
       const formData = new FormData()
       formData.append("file", event.target.files[0])
+      formData.append("merchantPDA", merchantPDA.toBase58())
+      formData.append("tokenType", type)
+      formData.append("fileType", "IMAGE")
 
       try {
         console.log("2")
-        const response = await axios.post("/api/aws", formData)
+        const response = await axios.post("/api/aws?path=image", formData)
+        // const response = await axios.post("/api/aws", formData)
 
         if (response) {
           console.log("File uploaded successfully")

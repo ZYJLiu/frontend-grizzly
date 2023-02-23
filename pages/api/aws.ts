@@ -54,17 +54,31 @@ export default async function handler(
         })
       }
     )
-    console.log("File path:", files.file.filepath)
-    const fileBuffer = fs.readFileSync(files.file.filepath)
-    console.log("File buffer length:", fileBuffer.length)
-    const file: MetaplexFile = await toMetaplexFile(fileBuffer, "image.jpg", {
-      uniqueName: "TEST-IMAGE",
-      contentType: files.file.mimetype,
-    })
-    // const file: MetaplexFile = await toMetaplexFileFromBrowser(files.file)
-    const imageUri = await metaplex.storage().upload(file)
-    console.log("Image URI:", imageUri)
-    res.status(200).json({ imageUri })
+    console.log(fields.merchantPDA)
+
+    if (req.query.path === "image") {
+      console.log("File path:", files.file.filepath)
+      const fileBuffer = fs.readFileSync(files.file.filepath)
+      const file: MetaplexFile = await toMetaplexFile(fileBuffer, "", {
+        uniqueName: `${fields.merchantPDA}-${fields.tokenType}-${fields.fileType}`,
+        contentType: files.file.mimetype,
+      })
+      const imageUri = await metaplex.storage().upload(file)
+      console.log("Image URI:", imageUri)
+      res.status(200).json({ imageUri })
+    }
+
+    if (req.query.path === "json") {
+      const fileBuffer = fs.readFileSync(files.data.filepath)
+      const file: MetaplexFile = await toMetaplexFile(fileBuffer, "", {
+        uniqueName: `${fields.merchantPDA}-${fields.tokenType}-${fields.fileType}`,
+        contentType: files.data.mimetype,
+      })
+      const metadataUri = await metaplex.storage().upload(file)
+      console.log("Metadata URI:", metadataUri)
+      res.status(200).json({ metadataUri })
+      // res.status(200).json({})
+    }
   }
 
   //   console.log(file)

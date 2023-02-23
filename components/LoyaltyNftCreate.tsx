@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { metaplex } from "../utils/metaplex"
 import { ImageUploader } from "./ImageUploader"
+import axios from "axios"
 
 type Props = {
   merchantPDA: PublicKey
@@ -42,6 +43,7 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
   const [symbol, setSymbol] = useState("")
   const [basisPoints, setBasisPoints] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [ready, setReady] = useState(false)
   const uriReady = useRef(false)
 
   console.log(basisPoints)
@@ -53,18 +55,39 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
       symbol: symbol,
       image: imageUrl,
     }
-    const { uri, metadata } = await metaplex.nfts().uploadMetadata(data)
-    console.log("metadata:", uri)
-    setUri(uri)
+
+    const formData = new FormData()
+    formData.append("merchantPDA", merchantPDA.toBase58())
+    formData.append("tokenType", "LOYALTY_NFT")
+    formData.append("fileType", "JSON")
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(data)], { type: "application/json" })
+    )
+
+    // const { uri, metadata } = await metaplex.nfts().uploadMetadata(data)
+    const response = await axios.post("/api/aws?path=json", formData)
+    // console.log("metadata:", uri)
+
+    if (response) {
+      console.log("File uploaded successfully")
+      console.log(response.data)
+      setUri(response.data.metadataUri)
+      setReady(true)
+    } else {
+      console.error("Error uploading file")
+    }
   }, [name, symbol, imageUrl, metaplex])
 
   useEffect(() => {
-    if (uriReady.current && uri != null && loading) {
+    if (uriReady.current && uri != null && loading && ready) {
       transaction()
+      setReady(false)
     } else {
       uriReady.current = true
+      setReady(false)
     }
-  }, [uri])
+  }, [uri, ready])
 
   async function transaction() {
     if (!publicKey) return
@@ -112,6 +135,8 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
       const signature = await sendTransaction(transaction, connection)
       console.log(signature)
 
+      alert("Transaction sent, waiting for finalization...")
+
       await connection.confirmTransaction(signature, "finalized")
     } catch (error) {
       console.log(`Error creating merchant account: ${error}`)
@@ -123,7 +148,12 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
   return (
     <>
       <HStack>
-        <ImageUploader imageUrl={imageUrl} setImageUrl={setImageUrl} />
+        <ImageUploader
+          imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
+          merchantPDA={merchantPDA}
+          type="LOYALTY_NFT"
+        />
         <FormControl>
           <FormLabel mt={2}>Name</FormLabel>
           <Input
