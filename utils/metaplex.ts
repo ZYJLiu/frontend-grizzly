@@ -29,7 +29,7 @@ const airdrop = async () => {
   }
 }
 
-airdrop()
+// airdrop()
 
 export const metaplex = new Metaplex(connection)
   .use(

@@ -1,6 +1,7 @@
 import { VStack, Image, Table, Tbody, Tr, Td } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import { metaplex } from "../utils/metaplex"
+import ModalComponent from "./Modal"
 
 type Props = {
   merchantState: any
@@ -56,6 +57,7 @@ export const LoyaltyNftData: React.FC<Props> = ({ merchantState }) => {
               </Tbody>
             </Table>
           </VStack>
+          {/* <ModalComponent /> */}
         </VStack>
       )}
     </>
