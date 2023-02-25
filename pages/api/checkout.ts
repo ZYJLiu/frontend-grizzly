@@ -1,6 +1,5 @@
 // Create Solana Pay transaction for Square order amount
-// Checks if wallet holds "discount" NFT, and if so, applies 10% discount and updates Square order
-// If wallet does not hold "discount" NFT, add instruction to mint "discount" NFT to wallet
+// Adds anchor-grizzly instructions (loyalty nft, reward tokens)
 import { NextApiRequest, NextApiResponse } from "next"
 import {
   ComputeBudgetProgram,
@@ -13,7 +12,6 @@ import {
   createBurnInstruction,
   getAccount,
   getAssociatedTokenAddress,
-  getAssociatedTokenAddressSync,
   getMint,
 } from "@solana/spl-token"
 import { BN, Program } from "@project-serum/anchor"
@@ -163,11 +161,13 @@ async function buildTransaction(
   orderId: string,
   isChecked: boolean
 ): Promise<PostResponse> {
+  // Get the merchant PDA
   const [merchantPDA] = PublicKey.findProgramAddressSync(
     [Buffer.from("MERCHANT"), receiver.toBuffer()],
     program.programId
   )
 
+  // Fetch the merchant account
   const merchantAccount = await program.account.merchantState.fetch(merchantPDA)
 
   // Check for NFT discounts
@@ -214,6 +214,7 @@ async function buildTransaction(
     transaction.add(modifyComputeUnits, createNftInstruction)
   }
 
+  // if reward points are redeemed, burn them
   if (rewardRedeemed != 0) {
     const tokenAddress = await getAssociatedTokenAddress(
       merchantAccount.rewardPointsMint,
@@ -249,11 +250,6 @@ async function buildTransaction(
   // Add the transfer instruction to the transaction
   transaction.add(transferInstruction)
 
-  // if (!nftDiscountExists) {
-  //   // nftMint needs to sign the transaction when creating a new NFT
-  //   transaction.sign(nftMint)
-  // }
-
   // Serialize the transaction
   const serializedTransaction = transaction.serialize({
     requireAllSignatures: false, // wallet has to sign
@@ -267,6 +263,7 @@ async function buildTransaction(
   }
 }
 
+// TODO: rename
 async function checkForDiscountNft(
   account: PublicKey,
   amount: number,
@@ -290,6 +287,8 @@ async function checkForDiscountNft(
   let message = `Checkout Amount $${paymentAmount}`
 
   // TODO: fix
+  // if isChecked (checked redeem reward points at checkout)
+  // subtract reward points from payment amounts
   let rewardRedeemed = 0
   if (isChecked) {
     try {
@@ -420,14 +419,6 @@ async function getCreateNftInstruction(
       .findByMint({ mintAddress: merchantAccount.loyaltyCollectionMint }),
   ])
 
-  // // NFT metadata
-  // const nft = {
-  //   uri: "https://arweave.net/6kjuB7_jTGH7V5MotVdpDKMekWgjS_AShd193Z9mzew",
-  //   // uri: "https://arweave.net/d9FnI04yoJ23Kiqs5qrlu9UKeyV76elBMjhLy-Xh1jk",
-  //   name: "GRIZZLY",
-  //   symbol: "GRIZZLY",
-  // }
-
   // Program ID for the token metadata
   const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
@@ -454,6 +445,8 @@ async function getCreateNftInstruction(
   return createNftInstruction
 }
 
+// build anchor-grizzly program transaction instruction
+// transfers "USDC" tokens from customer to merchant and mints reward tokens to customer
 async function getTransferInstruction(
   program: Program<AnchorGrizzly>,
   account: PublicKey,

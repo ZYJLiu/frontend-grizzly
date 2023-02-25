@@ -12,7 +12,7 @@ import {
   ModalOverlay,
   useDisclosure,
 } from "@chakra-ui/react"
-import React, { useRef } from "react"
+import React from "react"
 import { ImageUploader } from "./ImageUploader"
 
 export default function ModalComponent() {

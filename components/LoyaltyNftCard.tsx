@@ -9,6 +9,7 @@ type Props = {
   fetchData: (pda: PublicKey) => void
 }
 
+// display loyalty nft data or create form
 export const LoyaltyNftCard: React.FC<Props> = ({
   merchantPDA,
   merchantState,

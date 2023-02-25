@@ -1,15 +1,12 @@
 import {
   Metaplex,
-  walletAdapterIdentity,
   bundlrStorage,
-  MetaplexFile,
-  toMetaplexFileFromBrowser,
   keypairIdentity,
-  toMetaplexFileFromJson,
 } from "@metaplex-foundation/js"
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js"
 import { connection } from "./anchor-grizzly"
 
+// unused
 // temp workaround for bundlr b/c wallet approval takes too many steps
 const burner = JSON.parse(
   process.env.NEXT_PUBLIC_TEST_BURNER_KEY ?? ""

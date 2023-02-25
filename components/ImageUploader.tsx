@@ -9,12 +9,7 @@ import {
   Box,
   Heading,
 } from "@chakra-ui/react"
-import { useCallback, useState } from "react"
-import { metaplex } from "../utils/metaplex"
-import {
-  MetaplexFile,
-  toMetaplexFileFromBrowser,
-} from "@metaplex-foundation/js"
+import { useState } from "react"
 import axios from "axios"
 import { PublicKey } from "@solana/web3.js"
 
@@ -33,9 +28,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 }) => {
   const [loading, setLoading] = useState(false)
 
-  // upload image
+  // upload image to aws s3 bucket
   const handleImage = async (event: any) => {
-    console.log("test")
     setLoading(true)
     try {
       const formData = new FormData()
@@ -45,9 +39,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       formData.append("fileType", "IMAGE")
 
       try {
-        console.log("2")
         const response = await axios.post("/api/aws?path=image", formData)
-        // const response = await axios.post("/api/aws", formData)
 
         if (response) {
           console.log("File uploaded successfully")

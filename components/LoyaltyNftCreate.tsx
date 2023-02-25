@@ -12,12 +12,9 @@ import {
 } from "@chakra-ui/react"
 import { ComputeBudgetProgram, PublicKey, Transaction } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { connection, program, usdcDevMint } from "../utils/anchor-grizzly"
-import {
-  getAssociatedTokenAddress,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { connection, program } from "../utils/anchor-grizzly"
+import { getAssociatedTokenAddress } from "@solana/spl-token"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { metaplex } from "../utils/metaplex"
 import { ImageUploader } from "./ImageUploader"
@@ -34,7 +31,6 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
   merchantState,
   fetchData,
 }) => {
-  console.log("Reward Mint", merchantState.rewardPointsMint.toString())
   const { publicKey, sendTransaction } = useWallet()
 
   const [imageUrl, setImageUrl] = useState("")
@@ -65,9 +61,8 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
       new Blob([JSON.stringify(data)], { type: "application/json" })
     )
 
-    // const { uri, metadata } = await metaplex.nfts().uploadMetadata(data)
+    // update loyalty nft metadata to s3 bucket
     const response = await axios.post("/api/aws?path=json", formData)
-    // console.log("metadata:", uri)
 
     if (response) {
       console.log("File uploaded successfully")

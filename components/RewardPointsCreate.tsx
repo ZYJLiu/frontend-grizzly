@@ -1,44 +1,19 @@
 import {
   Button,
-  VStack,
-  Text,
-  Spinner,
   FormControl,
   FormLabel,
   Input,
-  Stack,
-  Image,
-  Container,
-  AspectRatio,
-  Box,
-  Heading,
   NumberInput,
   NumberInputField,
   HStack,
-  Card,
-  CardBody,
-  Table,
-  Tbody,
-  Tr,
-  Td,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
 } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { connection, program, usdcDevMint } from "../utils/anchor-grizzly"
-import { getAssociatedTokenAddressSync } from "@solana/spl-token"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  Metaplex,
-  walletAdapterIdentity,
-  bundlrStorage,
-  MetaplexFile,
-  toMetaplexFileFromBrowser,
-  keypairIdentity,
-  toMetaplexFileFromJson,
-} from "@metaplex-foundation/js"
+import { connection, program } from "../utils/anchor-grizzly"
+import { useCallback, useEffect, useState, useRef } from "react"
 import { PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { metaplex } from "../utils/metaplex"
 import { ImageUploader } from "./ImageUploader"
@@ -83,9 +58,7 @@ export const RewardPointsCreate: React.FC<Props> = ({
       new Blob([JSON.stringify(data)], { type: "application/json" })
     )
 
-    // const { uri, metadata } = await metaplex.nfts().uploadMetadata(data)
     const response = await axios.post("/api/aws?path=json", formData)
-    // console.log("metadata:", uri)
 
     if (response) {
       console.log("File uploaded successfully")

@@ -6,16 +6,6 @@ import {
   VStack,
   Card,
   CardBody,
-  Stack,
-  StackDivider,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  Link,
-  useColorMode,
-  Button,
   Text,
   HStack,
   Table,
@@ -23,7 +13,6 @@ import {
   Tr,
   Td,
 } from "@chakra-ui/react"
-import WalletMultiButton from "../../components/WalletMultiButton"
 
 import { program } from "../../utils/anchor-grizzly"
 import { useWallet } from "@solana/wallet-adapter-react"
