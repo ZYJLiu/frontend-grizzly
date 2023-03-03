@@ -156,7 +156,11 @@ export const RewardPointsCreate: React.FC<Props> = ({
         </FormControl>
       </HStack>
 
-      <Button onClick={uploadMetadata} isLoading={loading}>
+      <Button
+        onClick={uploadMetadata}
+        isLoading={loading}
+        loadingText="Awaiting Finalization"
+      >
         Create
       </Button>
     </>

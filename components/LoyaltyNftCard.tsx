@@ -26,11 +26,14 @@ export const LoyaltyNftCard: React.FC<Props> = ({
             </Heading>
             {merchantState.loyaltyCollectionMint.toString() !==
             "11111111111111111111111111111111" ? (
-              <LoyaltyNftData merchantState={merchantState} />
+              <LoyaltyNftData
+                merchantState={merchantState}
+                merchantPDA={merchantPDA}
+                fetchData={fetchData}
+              />
             ) : (
               <LoyaltyNftCreate
                 merchantPDA={merchantPDA}
-                merchantState={merchantState}
                 fetchData={fetchData}
               />
             )}

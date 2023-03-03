@@ -10,13 +10,93 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
   useDisclosure,
 } from "@chakra-ui/react"
-import React from "react"
-import { ImageUploader } from "./ImageUploader"
+import { useWallet } from "@solana/wallet-adapter-react"
+import React, { useEffect, useState } from "react"
+import { connection, program } from "../utils/anchor-grizzly"
+import { PublicKey, Transaction } from "@solana/web3.js"
 
-export default function ModalComponent() {
+type Type = "LOYALTY_NFT" | "REWARD_POINTS"
+
+type Props = {
+  merchantPDA: PublicKey
+  fetchData: (pda: PublicKey) => void
+  type: Type
+}
+
+const DESCRIPTIONS = {
+  LOYALTY_NFT: "Update Loyalty NFT Discount Percentage",
+  REWARD_POINTS: "Update Reward Points Reward Percentage",
+}
+
+export const ModalComponent: React.FC<Props> = ({
+  merchantPDA,
+  fetchData,
+  type,
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const [basisPoints, setBasisPoints] = useState(0)
+  const { publicKey, sendTransaction } = useWallet()
+  const [loading, setLoading] = useState(false)
+  const [description] = useState<string>(DESCRIPTIONS[type] as string)
+
+  async function handleClick() {
+    setLoading(true)
+    if (!publicKey) return
+
+    let tx: Transaction | undefined
+    if (type === "LOYALTY_NFT") {
+      tx = await program.methods
+        .updateLoyaltyPoints(basisPoints)
+        .accounts({
+          authority: publicKey,
+        })
+        .transaction()
+    } else if (type === "REWARD_POINTS") {
+      tx = await program.methods
+        .updateRewardPoints(basisPoints)
+        .accounts({
+          authority: publicKey,
+        })
+        .transaction()
+    } else {
+      console.error("Invalid type:", type)
+      return
+    }
+
+    try {
+      if (!tx) return
+      const txSig = await sendTransaction(tx, connection)
+      console.log(txSig)
+
+      alert("Transaction sent, waiting for finalization...")
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash()
+
+      await connection
+        .confirmTransaction(
+          {
+            blockhash,
+            lastValidBlockHeight,
+            signature: txSig,
+          },
+          "finalized"
+        )
+        .then(() => fetchData(merchantPDA))
+        .then(() => setLoading(false))
+        .catch(() => setLoading(false))
+
+      alert("Update complete, Transaction finalized")
+    } catch (error) {
+      console.log(`Error creating merchant account: ${error}`)
+    }
+  }
 
   return (
     <>
@@ -28,22 +108,35 @@ export default function ModalComponent() {
           <ModalHeader>Update Data</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <FormControl>
-              <FormLabel>Label</FormLabel>
-              <Input placeholder="Label" />
-            </FormControl>
-
             <FormControl mt={4}>
-              <FormLabel>Label</FormLabel>
-              <Input placeholder="Label" />
+              <FormLabel mt={2}>{description}</FormLabel>
+              <NumberInput
+                onChange={(value) => setBasisPoints(Number(value) * 100)}
+                defaultValue={0}
+                min={0}
+                max={100}
+                precision={2}
+                step={0.25}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
             </FormControl>
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr={3}>
+            <Button
+              onClick={handleClick}
+              isLoading={loading}
+              colorScheme="blue"
+              mr={3}
+            >
               Save
             </Button>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={onClose}>Close</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

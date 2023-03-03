@@ -25,7 +25,11 @@ export const RewardPointsCard: React.FC<Props> = ({
             </Heading>
             {merchantState.rewardPointsMint.toString() !==
             "11111111111111111111111111111111" ? (
-              <RewardPointsData merchantState={merchantState} />
+              <RewardPointsData
+                merchantState={merchantState}
+                merchantPDA={merchantPDA}
+                fetchData={fetchData}
+              />
             ) : (
               <RewardPointsCreate
                 merchantPDA={merchantPDA}

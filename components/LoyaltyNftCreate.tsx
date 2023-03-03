@@ -22,13 +22,11 @@ import axios from "axios"
 
 type Props = {
   merchantPDA: PublicKey
-  merchantState: any
   fetchData: (pda: PublicKey) => void
 }
 
 export const LoyaltyNftCreate: React.FC<Props> = ({
   merchantPDA,
-  merchantState,
   fetchData,
 }) => {
   const { publicKey, sendTransaction } = useWallet()
@@ -180,7 +178,11 @@ export const LoyaltyNftCreate: React.FC<Props> = ({
         </FormControl>
       </HStack>
 
-      <Button onClick={uploadMetadata} isLoading={loading}>
+      <Button
+        onClick={uploadMetadata}
+        isLoading={loading}
+        loadingText="Awaiting Finalization"
+      >
         Create
       </Button>
     </>

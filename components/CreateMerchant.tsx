@@ -63,10 +63,10 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
     <VStack justifyContent="center">
       <Button
         isLoading={loading}
-        loadingText="Awaiting Finialized Transaction"
+        loadingText="Creating Merchant Account"
         onClick={handleClick}
       >
-        Create Merchant Account
+        Merchant Sign Up
       </Button>
     </VStack>
   )

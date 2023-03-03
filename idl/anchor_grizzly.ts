@@ -502,6 +502,76 @@ export type AnchorGrizzly = {
       ]
     },
     {
+      name: "updateRewardPoints"
+      accounts: [
+        {
+          name: "authority"
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: "merchant"
+          isMut: true
+          isSigner: false
+          pda: {
+            seeds: [
+              {
+                kind: "const"
+                type: "string"
+                value: "MERCHANT"
+              },
+              {
+                kind: "account"
+                type: "publicKey"
+                path: "authority"
+              }
+            ]
+          }
+        }
+      ]
+      args: [
+        {
+          name: "rewardPointsBasisPoints"
+          type: "u16"
+        }
+      ]
+    },
+    {
+      name: "updateLoyaltyPoints"
+      accounts: [
+        {
+          name: "authority"
+          isMut: true
+          isSigner: true
+        },
+        {
+          name: "merchant"
+          isMut: true
+          isSigner: false
+          pda: {
+            seeds: [
+              {
+                kind: "const"
+                type: "string"
+                value: "MERCHANT"
+              },
+              {
+                kind: "account"
+                type: "publicKey"
+                path: "authority"
+              }
+            ]
+          }
+        }
+      ]
+      args: [
+        {
+          name: "loyaltyDiscountBasisPoints"
+          type: "u16"
+        }
+      ]
+    },
+    {
       name: "initialize"
       accounts: [
         {
@@ -1098,6 +1168,76 @@ export const IDL: AnchorGrizzly = {
         {
           name: "symbol",
           type: "string",
+        },
+      ],
+    },
+    {
+      name: "updateRewardPoints",
+      accounts: [
+        {
+          name: "authority",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "merchant",
+          isMut: true,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: "const",
+                type: "string",
+                value: "MERCHANT",
+              },
+              {
+                kind: "account",
+                type: "publicKey",
+                path: "authority",
+              },
+            ],
+          },
+        },
+      ],
+      args: [
+        {
+          name: "rewardPointsBasisPoints",
+          type: "u16",
+        },
+      ],
+    },
+    {
+      name: "updateLoyaltyPoints",
+      accounts: [
+        {
+          name: "authority",
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: "merchant",
+          isMut: true,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: "const",
+                type: "string",
+                value: "MERCHANT",
+              },
+              {
+                kind: "account",
+                type: "publicKey",
+                path: "authority",
+              },
+            ],
+          },
+        },
+      ],
+      args: [
+        {
+          name: "loyaltyDiscountBasisPoints",
+          type: "u16",
         },
       ],
     },
