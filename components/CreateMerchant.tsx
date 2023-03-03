@@ -1,4 +1,4 @@
-import { Button, VStack, Text, Spinner } from "@chakra-ui/react"
+import { Button, VStack } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { connection, program, usdcDevMint } from "../utils/anchor-grizzly"

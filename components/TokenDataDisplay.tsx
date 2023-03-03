@@ -1,4 +1,4 @@
-import { VStack, Image, Table, Tbody, Tr, Td } from "@chakra-ui/react"
+import { VStack, Table, Tbody, Tr, Td } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { useEffect, useState } from "react"
 import { metaplex } from "../utils/metaplex"

@@ -20,8 +20,6 @@ import { PublicKey } from "@solana/web3.js"
 import { useEffect, useState } from "react"
 
 import { CreateMerchant } from "@/components/CreateMerchant"
-import { RewardPointsCard } from "@/components/RewardPointsCard"
-import { LoyaltyNftCard } from "@/components/LoyaltyNftCard"
 import { TokenCard } from "@/components/TokenCard"
 
 export default function MerchantPage() {
@@ -97,16 +95,6 @@ export default function MerchantPage() {
                 </Table>
               </Box>
               <HStack spacing="2vw">
-                {/* <LoyaltyNftCard
-                  merchantPDA={merchantPDA}
-                  merchantState={merchantState}
-                  fetchData={fetchData}
-                />
-                <RewardPointsCard
-                  merchantPDA={merchantPDA}
-                  merchantState={merchantState}
-                  fetchData={fetchData}
-                /> */}
                 <TokenCard
                   merchantPDA={merchantPDA}
                   merchantState={merchantState}
@@ -119,7 +107,6 @@ export default function MerchantPage() {
                   fetchData={fetchData}
                   type="REWARD_POINTS"
                 />
-                {/* <RewardPointsData merchantState={merchantState} /> */}
               </HStack>
             </CardBody>
           </Card>
