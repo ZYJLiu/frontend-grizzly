@@ -14,14 +14,15 @@ import {
   Td,
 } from "@chakra-ui/react"
 
-import { program } from "../../utils/anchor-grizzly"
+import { program } from "@/utils/anchor-grizzly"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey } from "@solana/web3.js"
 import { useEffect, useState } from "react"
 
-import { CreateMerchant } from "../../components/CreateMerchant"
-import { RewardPointsCard } from "../../components/RewardPointsCard"
+import { CreateMerchant } from "@/components/CreateMerchant"
+import { RewardPointsCard } from "@/components/RewardPointsCard"
 import { LoyaltyNftCard } from "@/components/LoyaltyNftCard"
+import { TokenCard } from "@/components/TokenCard"
 
 export default function MerchantPage() {
   const { publicKey, connected } = useWallet()
@@ -96,7 +97,7 @@ export default function MerchantPage() {
                 </Table>
               </Box>
               <HStack spacing="2vw">
-                <LoyaltyNftCard
+                {/* <LoyaltyNftCard
                   merchantPDA={merchantPDA}
                   merchantState={merchantState}
                   fetchData={fetchData}
@@ -105,6 +106,18 @@ export default function MerchantPage() {
                   merchantPDA={merchantPDA}
                   merchantState={merchantState}
                   fetchData={fetchData}
+                /> */}
+                <TokenCard
+                  merchantPDA={merchantPDA}
+                  merchantState={merchantState}
+                  fetchData={fetchData}
+                  type="LOYALTY_NFT"
+                />
+                <TokenCard
+                  merchantPDA={merchantPDA}
+                  merchantState={merchantState}
+                  fetchData={fetchData}
+                  type="REWARD_POINTS"
                 />
                 {/* <RewardPointsData merchantState={merchantState} /> */}
               </HStack>

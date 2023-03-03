@@ -2,6 +2,8 @@ import { VStack, Heading, Card, CardBody } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { RewardPointsData } from "./RewardPointsData"
 import { RewardPointsCreate } from "./RewardPointsCreate"
+import { TokenDataDisplay } from "./TokenDataDisplay"
+import { TokenCreate } from "./TokenCreate"
 
 type Props = {
   merchantPDA: PublicKey
@@ -25,16 +27,27 @@ export const RewardPointsCard: React.FC<Props> = ({
             </Heading>
             {merchantState.rewardPointsMint.toString() !==
             "11111111111111111111111111111111" ? (
-              <RewardPointsData
+              // <RewardPointsData
+              //   merchantState={merchantState}
+              //   merchantPDA={merchantPDA}
+              //   fetchData={fetchData}
+              //   />
+              <TokenDataDisplay
                 merchantState={merchantState}
                 merchantPDA={merchantPDA}
                 fetchData={fetchData}
+                type="REWARD_POINTS"
               />
             ) : (
-              <RewardPointsCreate
+              // <RewardPointsCreate
+              //   merchantPDA={merchantPDA}
+              //   merchantState={merchantState}
+              //   fetchData={fetchData}
+              // />
+              <TokenCreate
                 merchantPDA={merchantPDA}
-                merchantState={merchantState}
                 fetchData={fetchData}
+                type="REWARD_POINTS"
               />
             )}
           </VStack>
