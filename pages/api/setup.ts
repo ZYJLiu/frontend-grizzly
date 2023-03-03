@@ -2,7 +2,7 @@
 // Used to setup mock wallet for testing
 import { NextApiRequest, NextApiResponse } from "next"
 import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js"
-import { connection, program, auth } from "../../utils/setup"
+import { connection, program, auth } from "@/utils/setup"
 import { getAssociatedTokenAddress } from "@solana/spl-token"
 
 // Public key of wallet scanning QR code
@@ -40,7 +40,7 @@ export default async function handler(
 
 function get(res: NextApiResponse<GetResponse>) {
   res.status(200).json({
-    label: "SANDSTORM",
+    label: "GRIZZLY",
     icon: "https://arweave.net/esxvpuoKv02cFpJWgsHGxiu31vqB_UPKR_yaFT_RwoE",
   })
 }

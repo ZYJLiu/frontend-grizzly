@@ -9,7 +9,7 @@ import {
 } from "@solana/pay"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js"
-import { connection } from "../utils/setup"
+import { connection } from "../utils/anchor-grizzly"
 import { useEffect, useRef, useState } from "react"
 import Confirmed from "./Confirmed"
 import axios from "axios"

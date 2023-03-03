@@ -2,7 +2,7 @@
 // Checks for a confirmed transaction including the reference public key
 import { findReference, FindReferenceError } from "@solana/pay"
 import { Keypair, PublicKey } from "@solana/web3.js"
-import { connection } from "./setup"
+import { connection } from "./anchor-grizzly"
 
 export const checkTransaction = async (
   reference: PublicKey,

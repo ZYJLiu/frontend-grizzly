@@ -76,7 +76,7 @@ export default async function handler(
 // Handles GET request
 function get(res: NextApiResponse<GetResponse>) {
   res.status(200).json({
-    label: "SANDSTORM",
+    label: "GRIZZLY",
     icon: "https://arweave.net/esxvpuoKv02cFpJWgsHGxiu31vqB_UPKR_yaFT_RwoE",
   })
 }
