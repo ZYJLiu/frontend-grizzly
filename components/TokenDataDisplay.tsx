@@ -19,42 +19,43 @@ export const TokenDataDisplay: React.FC<Props> = ({
   type,
 }) => {
   const [nft, setNft] = useState<any>(null)
-  const [data, setData] = useState<
-    Array<{ label: string; value: string | number }>
-  >([])
-  const [imageUrl, setImageUrl] = useState("")
+  const [imageUrl, setImageUrl] = useState<string>("")
+  const description = type === "LOYALTY_NFT" ? "Discount" : "Reward"
 
   useEffect(() => {
     const fetchNFT = async () => {
-      let mintAddress = ""
-      let description = ""
-      let percentage = 0
-      if (type === "LOYALTY_NFT") {
-        mintAddress = merchantState.loyaltyCollectionMint
-        description = "Discount"
-        percentage = merchantState.loyaltyDiscountBasisPoints / 100
-      } else if (type === "REWARD_POINTS") {
-        mintAddress = merchantState.rewardPointsMint
-        description = "Reward"
-        percentage = merchantState.rewardPointsBasisPoints / 100
-      }
+      const mintAddress =
+        type === "LOYALTY_NFT"
+          ? merchantState.loyaltyCollectionMint
+          : merchantState.rewardPointsMint
 
       if (mintAddress.toString() !== "11111111111111111111111111111111") {
-        //@ts-ignore
         const nft = await metaplex.nfts().findByMint({ mintAddress })
         setNft(nft)
-        setImageUrl(nft.json!.image as string)
 
-        const newData = [
-          { label: "Name", value: nft.name },
-          { label: "Symbol", value: nft.symbol },
-          { label: description, value: `${percentage}%` },
-        ]
-        setData(newData)
+        if (nft.json?.image !== undefined) {
+          setImageUrl(nft.json.image as string)
+        }
       }
     }
+
     fetchNFT()
   }, [merchantState, type])
+
+  const data = nft
+    ? [
+        { label: "Name", value: nft.name },
+        { label: "Symbol", value: nft.symbol },
+        {
+          label: description,
+          value: `${
+            type === "LOYALTY_NFT"
+              ? merchantState.loyaltyDiscountBasisPoints
+              : merchantState.rewardPointsBasisPoints / 100
+          }%`,
+        },
+      ]
+    : []
 
   return (
     <>

@@ -2,13 +2,11 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
-  ModalHeader,
   ModalOverlay,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -18,7 +16,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { useWallet } from "@solana/wallet-adapter-react"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { connection, program } from "../utils/anchor-grizzly"
 import { PublicKey, Transaction } from "@solana/web3.js"
 
@@ -41,12 +39,12 @@ export const ModalComponent: React.FC<Props> = ({
   type,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const [basisPoints, setBasisPoints] = useState(0)
   const { publicKey, sendTransaction } = useWallet()
+  const [basisPoints, setBasisPoints] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [description] = useState<string>(DESCRIPTIONS[type] as string)
+  const description = DESCRIPTIONS[type] as string
 
-  async function handleClick() {
+  const handleClick = useCallback(async () => {
     setLoading(true)
     if (!publicKey) return
 
@@ -96,7 +94,7 @@ export const ModalComponent: React.FC<Props> = ({
     } catch (error) {
       console.log(`Error creating merchant account: ${error}`)
     }
-  }
+  }, [basisPoints, publicKey, type, merchantPDA])
 
   return (
     <>
@@ -105,7 +103,6 @@ export const ModalComponent: React.FC<Props> = ({
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Update Data</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl mt={4}>

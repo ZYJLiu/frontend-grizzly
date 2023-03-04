@@ -3,7 +3,7 @@ import { PublicKey } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { connection, program, usdcDevMint } from "../utils/anchor-grizzly"
 import { getAssociatedTokenAddressSync } from "@solana/spl-token"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 type Props = {
   merchantPDA: PublicKey
@@ -14,14 +14,13 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
   const { publicKey, sendTransaction } = useWallet()
   const [loading, setLoading] = useState(false)
 
-  async function handleClick() {
-    if (!publicKey) return
+  const paymentDestination = useMemo(() => {
+    if (!publicKey) return null
+    return getAssociatedTokenAddressSync(usdcDevMint, publicKey)
+  }, [publicKey])
 
-    // get the associated token address for the merchant
-    const paymentDestination = await getAssociatedTokenAddressSync(
-      usdcDevMint,
-      publicKey
-    )
+  async function handleClick() {
+    if (!publicKey || !paymentDestination) return
 
     // create transaction
     const tx = await program.methods

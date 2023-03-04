@@ -1,24 +1,14 @@
-import {
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  NumberInput,
-  NumberInputField,
-  HStack,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-} from "@chakra-ui/react"
+import { Button, HStack } from "@chakra-ui/react"
 import { ComputeBudgetProgram, PublicKey, Transaction } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { connection, program } from "../utils/anchor-grizzly"
 import { getAssociatedTokenAddress } from "@solana/spl-token"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { metaplex } from "../utils/metaplex"
 import { ImageUploader } from "./ImageUploader"
 import axios from "axios"
+import { TokenForm } from "./TokenForm"
 
 type Props = {
   merchantPDA: PublicKey
@@ -42,33 +32,34 @@ export const TokenCreate: React.FC<Props> = ({
   const [ready, setReady] = useState(false)
   const uriReady = useRef(false)
 
-  const uploadMetadata = useCallback(async () => {
-    setLoading(true)
+  const formData = useMemo(() => {
     const data = {
       name: name,
       symbol: symbol,
       image: imageUrl,
     }
-    const formData = new FormData()
-    formData.append("merchantPDA", merchantPDA.toBase58())
-    formData.append("tokenType", type)
-    formData.append("fileType", "JSON")
-    formData.append(
+    const fd = new FormData()
+    fd.append("merchantPDA", merchantPDA.toBase58())
+    fd.append("tokenType", type)
+    fd.append("fileType", "JSON")
+    fd.append(
       "data",
       new Blob([JSON.stringify(data)], { type: "application/json" })
     )
+    return fd
+  }, [imageUrl, merchantPDA, name, symbol, type])
 
+  const uploadMetadata = useCallback(async () => {
+    setLoading(true)
     const response = await axios.post("/api/aws?path=json", formData)
-
     if (response) {
-      console.log("File uploaded successfully")
-      console.log(response.data)
       setUri(response.data.metadataUri)
       setReady(true)
+      console.log(response.data)
     } else {
       console.error("Error uploading file")
     }
-  }, [name, symbol, imageUrl, metaplex, type])
+  }, [formData])
 
   useEffect(() => {
     if (uriReady.current && uri != null && loading && ready) {
@@ -80,7 +71,7 @@ export const TokenCreate: React.FC<Props> = ({
     }
   }, [uri, ready])
 
-  async function transaction() {
+  const transaction = useCallback(async () => {
     if (!publicKey) return
 
     const [mintPDA] = PublicKey.findProgramAddressSync(
@@ -153,7 +144,7 @@ export const TokenCreate: React.FC<Props> = ({
       console.log(`Error creating token: ${error}`)
       setLoading(false)
     }
-  }
+  }, [publicKey, basisPoints, uri, name, symbol, merchantPDA, type])
 
   return (
     <>
@@ -164,37 +155,14 @@ export const TokenCreate: React.FC<Props> = ({
           merchantPDA={merchantPDA}
           type={type}
         />
-        <FormControl>
-          <FormLabel mt={2}>Name</FormLabel>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter name"
-          />
-          <FormLabel mt={2}>Symbol</FormLabel>
-          <Input
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value)}
-            placeholder="Enter symbol"
-          />
-          <FormLabel mt={2}>
-            % {type === "LOYALTY_NFT" ? "Discount" : "Reward"} on Transaction
-          </FormLabel>
-          <NumberInput
-            onChange={(value) => setBasisPoints(Number(value) * 100)}
-            defaultValue={0}
-            min={0}
-            max={100}
-            precision={2}
-            step={0.25}
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-        </FormControl>
+        <TokenForm
+          name={name}
+          setName={setName}
+          symbol={symbol}
+          setSymbol={setSymbol}
+          type={type}
+          setBasisPoints={setBasisPoints}
+        />
       </HStack>
       <Button
         onClick={uploadMetadata}

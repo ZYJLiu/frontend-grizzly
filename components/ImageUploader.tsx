@@ -9,7 +9,7 @@ import {
   Box,
   Heading,
 } from "@chakra-ui/react"
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import axios from "axios"
 import { PublicKey } from "@solana/web3.js"
 
@@ -29,36 +29,38 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [loading, setLoading] = useState(false)
 
   // upload image to aws s3 bucket
-  const handleImage = async (event: any) => {
-    setLoading(true)
-    try {
-      const formData = new FormData()
-      formData.append("file", event.target.files[0])
-      formData.append("merchantPDA", merchantPDA.toBase58())
-      formData.append("tokenType", type)
-      formData.append("fileType", "IMAGE")
-
+  const handleImage = useCallback(
+    async (event: any) => {
+      setLoading(true)
       try {
-        const response = await axios.post("/api/aws?path=image", formData)
+        const formData = new FormData()
+        formData.append("file", event.target.files[0])
+        formData.append("merchantPDA", merchantPDA.toBase58())
+        formData.append("tokenType", type)
+        formData.append("fileType", "IMAGE")
 
-        if (response) {
-          console.log("File uploaded successfully")
-          console.log(response.data)
-          setImageUrl(response.data.imageUri)
-        } else {
-          console.error("Error uploading file")
+        try {
+          const response = await axios.post("/api/aws?path=image", formData)
+
+          if (response) {
+            console.log("File uploaded successfully")
+            console.log(response.data)
+            setImageUrl(response.data.imageUri)
+          } else {
+            console.error("Error uploading file")
+          }
+        } catch (err) {
+          console.error("Error uploading file:", err)
         }
-      } catch (err) {
-        console.error("Error uploading file:", err)
+        setLoading(false)
+      } catch (e) {
+        console.log(e)
+        setLoading(false)
       }
       setLoading(false)
-    } catch (e) {
-      console.log(e)
-      setLoading(false)
-    }
-    setLoading(false)
-  }
-
+    },
+    [merchantPDA, type]
+  )
   return (
     <Container centerContent my="5">
       <AspectRatio width="60" ratio={1}>
@@ -88,7 +90,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                   <Spinner size="lg" color="blue.500" />
                 </Stack>
               ) : imageUrl ? (
-                <Image src={imageUrl} />
+                <Image src={imageUrl} loading="eager" />
               ) : (
                 <Stack
                   height="100%"

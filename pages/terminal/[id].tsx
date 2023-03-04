@@ -387,6 +387,7 @@ export default function Terminal() {
                             />
                           </FormControl>
                           <Button
+                            width="50%"
                             onClick={() => {
                               if (connected) {
                                 handleCreateOrder()
@@ -399,7 +400,9 @@ export default function Terminal() {
                           >
                             Solana Pay
                           </Button>
-                          <Button onClick={resetState}>Reset</Button>
+                          <Button width="50%" onClick={resetState}>
+                            Reset
+                          </Button>
                         </VStack>
                       </Flex>
                     </Td>
