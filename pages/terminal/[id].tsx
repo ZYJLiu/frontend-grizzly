@@ -42,6 +42,7 @@ import {
   OrderDetail,
   Payment,
 } from "../../utils/square"
+import { connection } from "@/utils/anchor-grizzly"
 
 export default function Terminal() {
   const { connected } = useWallet()
@@ -87,6 +88,9 @@ export default function Terminal() {
   // Toggle redeem loyalty points at checkout
   const [isChecked, setIsChecked] = useState(false)
   const toggleSwitch = () => setIsChecked(!isChecked)
+
+  // Transaction signature
+  const [txSig, setTxSig] = useState("")
 
   // Fetch catalog from SquareAPI
   const fetchCatalog = async () => {
@@ -244,6 +248,29 @@ export default function Terminal() {
     setItems(resetItems)
     setQuantities({})
   }
+
+  // Add entry to DB once transaction is finalized
+  useEffect(() => {
+    const fetchData = async () => {
+      if (txSig === "") {
+        return
+      }
+      await connection.confirmTransaction(txSig, "finalized")
+      const txData = await connection.getParsedTransaction(txSig)
+      // console.log("parsed", JSON.stringify(txData, null, 2))
+
+      if (txData) {
+        const response = await axios.post("/api/prismaCreate", {
+          signature: txSig,
+          customer: txData.transaction.message.accountKeys[0].pubkey.toString(),
+          amount: total,
+        })
+        console.log("Prisma Create Response:", response)
+      }
+    }
+
+    fetchData()
+  }, [txSig])
 
   // scale table based on screen size
   const scale = useBreakpointValue({
@@ -426,6 +453,7 @@ export default function Terminal() {
           isLoading={isLoading}
           isChecked={isChecked}
           setIsChecked={setIsChecked}
+          setTxSig={setTxSig}
         />
       )}
 

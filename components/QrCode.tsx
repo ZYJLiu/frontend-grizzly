@@ -24,6 +24,7 @@ interface Props {
   isLoading: boolean
   isChecked: boolean
   setIsChecked: (isChecked: boolean) => void
+  setTxSig: (txSig: string) => void
 }
 
 const QrModal = ({
@@ -36,6 +37,7 @@ const QrModal = ({
   isLoading,
   isChecked,
   setIsChecked,
+  setTxSig,
 }: Props) => {
   const qrRef = useRef<HTMLDivElement>(null)
   const [reference, setReference] = useState(Keypair.generate().publicKey)
@@ -112,6 +114,8 @@ const QrModal = ({
       setConfirmed(true)
       updateData()
       clearInterval(interval)
+      setTxSig(signatureInfo.signature)
+
       return
     } catch (e) {
       if (e instanceof FindReferenceError) return
