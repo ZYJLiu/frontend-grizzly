@@ -17,6 +17,28 @@ import {
 import { LinkIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons"
 import React, { useState } from "react"
 
+interface Transaction {
+  signature: string
+  customer: string
+  amount: number
+  createdAt: string
+}
+
+interface Customer {
+  customer: string
+  totalAmount: number
+  transactions: Transaction[]
+}
+
+interface TestProps {
+  data: Transaction[]
+}
+
+type CustomerMap = Record<
+  string,
+  { customer: string; totalAmount: number; transactions: Transaction[] }
+>
+
 export async function getServerSideProps() {
   try {
     const data = await prisma.transaction.findMany()
@@ -35,12 +57,12 @@ export async function getServerSideProps() {
   }
 }
 
-export default function Test({ data }) {
-  const [expandedCustomer, setExpandedCustomer] = useState(null)
+export default function Test({ data }: TestProps) {
+  const [expandedCustomer, setExpandedCustomer] = useState("")
   const [sortOrder, setSortOrder] = useState("desc")
 
   // group transactions by customer and sum the amount for each customer
-  const customers = data.reduce((acc, transaction) => {
+  const customers = data.reduce((acc: CustomerMap, transaction) => {
     const { customer, amount } = transaction
     if (!acc[customer]) {
       acc[customer] = { customer, totalAmount: 0, transactions: [] }
@@ -96,7 +118,7 @@ export default function Test({ data }) {
                     onClick={() =>
                       setExpandedCustomer(
                         expandedCustomer === customer.customer
-                          ? null
+                          ? ""
                           : customer.customer
                       )
                     }
