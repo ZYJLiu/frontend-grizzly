@@ -33,7 +33,7 @@ const Navbar = () => {
           <MenuItem as={Link} href="/merchant">
             Merchant
           </MenuItem>
-          <MenuItem as={Link} href="/test">
+          <MenuItem as={Link} href="/transaction-history">
             Transactions
           </MenuItem>
           {terminals.map((terminal) => (

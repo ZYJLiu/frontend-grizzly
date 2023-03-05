@@ -50,7 +50,7 @@ export const TokenDataDisplay: React.FC<Props> = ({
           label: description,
           value: `${
             type === "LOYALTY_NFT"
-              ? merchantState.loyaltyDiscountBasisPoints
+              ? merchantState.loyaltyDiscountBasisPoints / 100
               : merchantState.rewardPointsBasisPoints / 100
           }%`,
         },

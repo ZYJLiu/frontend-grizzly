@@ -1,0 +1,165 @@
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  VStack,
+  Card,
+  CardBody,
+  Heading,
+  HStack,
+  Link,
+  Flex,
+  Box,
+} from "@chakra-ui/react"
+import { useWallet } from "@solana/wallet-adapter-react"
+import { connection, program, usdcDevMint } from "../utils/anchor-grizzly"
+import { getAssociatedTokenAddressSync } from "@solana/spl-token"
+import { useEffect, useMemo, useState } from "react"
+import * as anchor from "@project-serum/anchor"
+import { PublicKey, Transaction } from "@solana/web3.js"
+import { getMint, Mint } from "@solana/spl-token"
+import { LinkIcon } from "@chakra-ui/icons"
+
+type Props = {
+  customers: string[]
+}
+
+export const Airdrop: React.FC<Props> = ({ customers }) => {
+  console.log(customers)
+  const { publicKey, sendTransaction } = useWallet()
+  const [loading, setLoading] = useState(false)
+  const [amount, setAmount] = useState(0)
+  const [txSig, setTxSig] = useState<string | null>(null)
+
+  const [merchantPDA, setMerchantPDA] = useState<PublicKey | null>(null)
+  const [rewardPointsPDA, setRewardPointsPDA] = useState<PublicKey | null>(null)
+  const [mintData, setMintData] = useState<Mint | null>(null)
+
+  useEffect(() => {
+    if (!publicKey) return
+
+    const [merchantPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("MERCHANT"), publicKey.toBuffer()],
+      program.programId
+    )
+    setMerchantPDA(merchantPDA)
+
+    const [rewardPointsPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("REWARD_POINTS"), merchantPDA.toBuffer()],
+      program.programId
+    )
+    setRewardPointsPDA(rewardPointsPDA)
+
+    async function getMintData() {
+      const mintData = await getMint(connection, rewardPointsPDA)
+      setMintData(mintData)
+    }
+    getMintData()
+  }, [publicKey])
+
+  async function handleClick() {
+    if (!publicKey || customers.length === 0) {
+      alert("Select at least one customer to airdrop.")
+      return
+    }
+    setLoading(true)
+
+    const instructions = await Promise.all(
+      customers.map(async (customer) => {
+        const customerRewardTokenAccount = await getAssociatedTokenAddressSync(
+          rewardPointsPDA!,
+          new PublicKey(customer)
+        )
+
+        return program.methods
+          .mintRewardPoints(new anchor.BN(amount * 10 ** mintData!.decimals))
+          .accounts({
+            authority: publicKey,
+            customer: new PublicKey(customer),
+            merchant: merchantPDA!,
+            customerRewardTokenAccount: customerRewardTokenAccount,
+          })
+          .instruction()
+      })
+    )
+
+    // send transaction
+    const tx = new Transaction().add(...instructions)
+    try {
+      const txSig = await sendTransaction(tx, connection)
+      console.log(txSig)
+
+      const { blockhash, lastValidBlockHeight } =
+        await connection.getLatestBlockhash()
+
+      await connection
+        .confirmTransaction(
+          {
+            blockhash,
+            lastValidBlockHeight,
+            signature: txSig,
+          },
+          "confirmed"
+        )
+        .then(() => setTxSig(txSig))
+    } catch (error) {
+      console.log(`Error creating merchant account: ${error}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <VStack justifyContent="center" paddingBottom={5}>
+      <Card>
+        <CardBody>
+          <Heading size="md" textAlign="center" marginBottom={0}>
+            Select Customers to Airdrop
+          </Heading>
+          <HStack justifyContent="space-between" alignItems="flex-end">
+            <FormControl mt={4} maxW="100px">
+              <NumberInput
+                onChange={(value) => setAmount(Number(value))}
+                defaultValue={0}
+                min={0}
+                max={100}
+                precision={2}
+                step={0.25}
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </FormControl>
+            <Button
+              isLoading={loading}
+              loadingText="Awaiting Confirmation"
+              onClick={handleClick}
+            >
+              Airdrop Amount
+            </Button>
+            {txSig && (
+              <Box paddingBottom="2.5">
+                <Link
+                  href={`https://solscan.io/tx/${txSig}?cluster=devnet`}
+                  isExternal
+                  _hover={{ color: "blue.600" }}
+                >
+                  <LinkIcon />
+                </Link>
+              </Box>
+            )}
+          </HStack>
+        </CardBody>
+      </Card>
+    </VStack>
+  )
+}

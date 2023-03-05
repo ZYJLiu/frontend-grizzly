@@ -26,7 +26,7 @@ const provider = new AnchorProvider(connection, wallet, {})
 setProvider(provider)
 
 // Anchor program setup
-const programId = new PublicKey("CvH4LqyXWxDMfE8yCqm9o6cTfuNLcTMvzQp1Uij6HkTo")
+const programId = new PublicKey("4m2iCzvckHmiXf4bV4xHckVAE2tMNLt2GgUziSr7uTiF")
 export const program = new Program(
   IDL as Idl,
   programId

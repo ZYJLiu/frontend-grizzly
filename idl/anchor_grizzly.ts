@@ -572,52 +572,89 @@ export type AnchorGrizzly = {
       ]
     },
     {
-      name: "initialize"
+      name: "mintRewardPoints"
       accounts: [
         {
-          name: "newAccount"
+          name: "authority"
           isMut: true
           isSigner: true
-          isOptional: true
         },
         {
-          name: "signer"
+          name: "customer"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "merchant"
+          isMut: false
+          isSigner: false
+          pda: {
+            seeds: [
+              {
+                kind: "const"
+                type: "string"
+                value: "MERCHANT"
+              },
+              {
+                kind: "account"
+                type: "publicKey"
+                path: "authority"
+              }
+            ]
+          }
+        },
+        {
+          name: "rewardPointsMint"
           isMut: true
-          isSigner: true
+          isSigner: false
+          pda: {
+            seeds: [
+              {
+                kind: "const"
+                type: "string"
+                value: "REWARD_POINTS"
+              },
+              {
+                kind: "account"
+                type: "publicKey"
+                account: "MerchantState"
+                path: "merchant"
+              }
+            ]
+          }
+        },
+        {
+          name: "customerRewardTokenAccount"
+          isMut: true
+          isSigner: false
         },
         {
           name: "systemProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "tokenProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "associatedTokenProgram"
+          isMut: false
+          isSigner: false
+        },
+        {
+          name: "rent"
           isMut: false
           isSigner: false
         }
       ]
       args: [
         {
-          name: "data"
+          name: "amount"
           type: "u64"
         }
       ]
-    },
-    {
-      name: "tokenMetadata"
-      accounts: [
-        {
-          name: "metadataAccount"
-          isMut: false
-          isSigner: false
-        },
-        {
-          name: "mint"
-          isMut: true
-          isSigner: false
-        },
-        {
-          name: "signer"
-          isMut: true
-          isSigner: true
-        }
-      ]
-      args: []
     }
   ]
   accounts: [
@@ -649,18 +686,6 @@ export type AnchorGrizzly = {
           {
             name: "loyaltyDiscountBasisPoints"
             type: "u16"
-          }
-        ]
-      }
-    },
-    {
-      name: "newAccount"
-      type: {
-        kind: "struct"
-        fields: [
-          {
-            name: "data"
-            type: "u64"
           }
         ]
       }
@@ -1242,52 +1267,89 @@ export const IDL: AnchorGrizzly = {
       ],
     },
     {
-      name: "initialize",
+      name: "mintRewardPoints",
       accounts: [
         {
-          name: "newAccount",
+          name: "authority",
           isMut: true,
           isSigner: true,
-          isOptional: true,
         },
         {
-          name: "signer",
+          name: "customer",
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: "merchant",
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: "const",
+                type: "string",
+                value: "MERCHANT",
+              },
+              {
+                kind: "account",
+                type: "publicKey",
+                path: "authority",
+              },
+            ],
+          },
+        },
+        {
+          name: "rewardPointsMint",
           isMut: true,
-          isSigner: true,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: "const",
+                type: "string",
+                value: "REWARD_POINTS",
+              },
+              {
+                kind: "account",
+                type: "publicKey",
+                account: "MerchantState",
+                path: "merchant",
+              },
+            ],
+          },
+        },
+        {
+          name: "customerRewardTokenAccount",
+          isMut: true,
+          isSigner: false,
         },
         {
           name: "systemProgram",
           isMut: false,
           isSigner: false,
         },
-      ],
-      args: [
         {
-          name: "data",
-          type: "u64",
-        },
-      ],
-    },
-    {
-      name: "tokenMetadata",
-      accounts: [
-        {
-          name: "metadataAccount",
+          name: "tokenProgram",
           isMut: false,
           isSigner: false,
         },
         {
-          name: "mint",
-          isMut: true,
+          name: "associatedTokenProgram",
+          isMut: false,
           isSigner: false,
         },
         {
-          name: "signer",
-          isMut: true,
-          isSigner: true,
+          name: "rent",
+          isMut: false,
+          isSigner: false,
         },
       ],
-      args: [],
+      args: [
+        {
+          name: "amount",
+          type: "u64",
+        },
+      ],
     },
   ],
   accounts: [
@@ -1319,18 +1381,6 @@ export const IDL: AnchorGrizzly = {
           {
             name: "loyaltyDiscountBasisPoints",
             type: "u16",
-          },
-        ],
-      },
-    },
-    {
-      name: "newAccount",
-      type: {
-        kind: "struct",
-        fields: [
-          {
-            name: "data",
-            type: "u64",
           },
         ],
       },

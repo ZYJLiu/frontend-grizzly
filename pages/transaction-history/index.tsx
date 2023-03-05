@@ -2,10 +2,12 @@ import { prisma } from "@/db/prisma"
 import {
   Card,
   CardBody,
+  Checkbox,
   Flex,
   Heading,
   IconButton,
   Link,
+  Spacer,
   Table,
   Tbody,
   Td,
@@ -16,6 +18,7 @@ import {
 } from "@chakra-ui/react"
 import { LinkIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons"
 import React, { useState } from "react"
+import { Airdrop } from "@/components/Airdrop"
 
 interface Transaction {
   signature: string
@@ -60,6 +63,7 @@ export async function getServerSideProps() {
 export default function Test({ data }: TestProps) {
   const [expandedCustomer, setExpandedCustomer] = useState("")
   const [sortOrder, setSortOrder] = useState("desc")
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([])
 
   // group transactions by customer and sum the amount for each customer
   const customers = data.reduce((acc: CustomerMap, transaction) => {
@@ -84,8 +88,10 @@ export default function Test({ data }: TestProps) {
   return (
     <VStack alignItems="center" justifyContent="center">
       <Heading>Transaction History</Heading>
+      <Spacer />
       <Card maxWidth="90%">
         <CardBody>
+          <Airdrop customers={selectedCustomers} />
           <Table variant="simple">
             <Thead>
               <Tr>
@@ -109,6 +115,7 @@ export default function Test({ data }: TestProps) {
                   />
                 </Th>
                 <Th textAlign="center">Details</Th>
+                <Th textAlign="center">Select</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -142,6 +149,27 @@ export default function Test({ data }: TestProps) {
                         }
                         variant="ghost"
                         size="sm"
+                      />
+                    </Td>
+                    <Td textAlign="center">
+                      <Checkbox
+                        isChecked={selectedCustomers.includes(
+                          customer.customer
+                        )}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCustomers([
+                              ...selectedCustomers,
+                              customer.customer,
+                            ])
+                          } else {
+                            setSelectedCustomers(
+                              selectedCustomers.filter(
+                                (c) => c !== customer.customer
+                              )
+                            )
+                          }
+                        }}
                       />
                     </Td>
                   </Tr>
