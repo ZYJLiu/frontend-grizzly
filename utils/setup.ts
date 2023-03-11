@@ -1,4 +1,4 @@
-// Anchor setup
+// only used on setup page to airdrop USDC-dev to set up mobile wallet
 import {
   Program,
   AnchorProvider,

@@ -1,3 +1,4 @@
+// Form for creating a new token
 import {
   FormControl,
   FormLabel,

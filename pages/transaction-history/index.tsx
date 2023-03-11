@@ -1,3 +1,6 @@
+// This transaction-history page is a simple table that displays all transactions in the database.
+// It also has a button that allows you to airdrop reward tokens to customers.
+
 import { prisma } from "@/db/prisma"
 import {
   Card,

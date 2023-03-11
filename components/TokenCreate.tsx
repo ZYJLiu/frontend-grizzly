@@ -1,3 +1,4 @@
+// This component is used to create a new token for a merchant
 import { Button, HStack } from "@chakra-ui/react"
 import { ComputeBudgetProgram, PublicKey, Transaction } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"

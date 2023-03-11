@@ -1,3 +1,4 @@
+// Add customer transaction to DB
 import { prisma } from "@/db/prisma"
 import { NextApiRequest, NextApiResponse } from "next"
 

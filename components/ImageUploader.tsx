@@ -1,3 +1,4 @@
+// Image uploader component for uploading images to AWS S3 bucket
 import {
   Text,
   Spinner,

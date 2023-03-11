@@ -1,3 +1,4 @@
+// Card that displays token data or token creation form
 import { useCallback } from "react"
 import { VStack, Heading, Card, CardBody } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"

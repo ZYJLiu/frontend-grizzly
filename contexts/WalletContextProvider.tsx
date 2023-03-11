@@ -1,3 +1,4 @@
+// This file is used to provide the wallet context to the app
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
 import {
   ConnectionProvider,

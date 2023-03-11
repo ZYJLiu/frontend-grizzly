@@ -1,4 +1,4 @@
-// point of sale terminal page
+// This is the terminal page, where the user can select items and checkout
 import {
   Button,
   Text,

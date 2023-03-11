@@ -1,3 +1,4 @@
+// Uploads a NFT image/metadata  to AWS S3 and returns the URI
 import type { NextApiRequest, NextApiResponse } from "next"
 import fs from "fs"
 import { Metaplex, toMetaplexFile, MetaplexFile } from "@metaplex-foundation/js"

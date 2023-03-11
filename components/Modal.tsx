@@ -1,3 +1,4 @@
+// Modal component for updating merchant account data
 import {
   Button,
   FormControl,

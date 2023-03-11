@@ -1,3 +1,4 @@
+// This is the merchant page. It will display the merchant's NFTs and reward points.
 import { Box, Heading, VStack, Text, HStack } from "@chakra-ui/react"
 
 import { program } from "@/utils/anchor-grizzly"

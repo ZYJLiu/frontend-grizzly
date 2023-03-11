@@ -1,4 +1,4 @@
-// setup Home page
+// setup page
 import {
   Box,
   Heading,

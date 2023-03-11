@@ -1,3 +1,4 @@
+// This component is used to airdrop reward points to customers.
 import { LinkIcon } from "@chakra-ui/icons"
 import {
   Box,

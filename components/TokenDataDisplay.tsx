@@ -1,3 +1,4 @@
+// Displays the data of the token
 import { VStack, Table, Tbody, Tr, Td } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { useEffect, useState } from "react"
