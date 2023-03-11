@@ -329,6 +329,7 @@ async function checkForDiscountNft(
 
     // Update Square Order with discount
     try {
+      console.log("updating square order")
       const location = await client.locationsApi.listLocations()
 
       if (location.result && location.result.locations) {
@@ -340,7 +341,7 @@ async function checkForDiscountNft(
             discounts: [
               {
                 name: "NFT Holder",
-                percentage: discount.toString(),
+                percentage: (loyaltyDiscountBasisPoints / 100).toString(),
                 scope: "ORDER",
               },
               {
@@ -362,7 +363,9 @@ async function checkForDiscountNft(
           idempotencyKey: randomUUID(),
         })
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e)
+    }
     message += `, Applied ${discount * 100}% NFT Discount`
   }
 
