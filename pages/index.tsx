@@ -76,8 +76,6 @@ export default function Home() {
                 <AccordionIcon />
               </AccordionButton>
               <AccordionPanel pb={4}>
-                {/* <Card rounded="lg">
-                  <CardBody rounded="lg"> */}
                 <Stack divider={<StackDivider />} spacing="4">
                   <Box>
                     <Heading size="xs" textTransform="uppercase">
@@ -112,16 +110,60 @@ export default function Home() {
                   </Box>
                   <Box>
                     <Heading size="xs" textTransform="uppercase">
+                      Merchant Page
+                    </Heading>
+                    <UnorderedList pt="2" fontSize="sm" spacing={1}>
+                      <ListItem>Navigate to Merchant Page</ListItem>
+                      <ListItem>Create an account</ListItem>
+                      <ListItem>Create Loyalty NFT and Reward Token</ListItem>
+                    </UnorderedList>
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Loyalty NFT
+                    </Heading>
+                    <UnorderedList pt="2" fontSize="sm" spacing={1}>
+                      <ListItem>Discount applied to customer purchase</ListItem>
+                      <ListItem>
+                        Mint NFT to customer at checkout if not holder
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Reward Token
+                    </Heading>
+                    <UnorderedList pt="2" fontSize="sm" spacing={1}>
+                      <ListItem>
+                        Minted to customer as reward points at checkout
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
+                      Transaction Page
+                    </Heading>
+                    <UnorderedList pt="2" fontSize="sm" spacing={1}>
+                      <ListItem>
+                        Shows customer historical transactions
+                      </ListItem>
+                      <ListItem>
+                        Ability to airdrop reward tokens to customers
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                  <Box>
+                    <Heading size="xs" textTransform="uppercase">
                       Point of Sale Terminals
                     </Heading>
                     <UnorderedList pt="2" fontSize="sm" spacing={1}>
                       <ListItem>
-                        Click top left Icon and navigate to a terminal
+                        Fetches Square catalog and displays items
                       </ListItem>
-                      <ListItem>Select items from Square Catalog</ListItem>
+                      <ListItem>Select items from Square catalog</ListItem>
                       <ListItem>Click "Solana Pay" button</ListItem>
                       <ListItem>
-                        Loading Spinner is waiting for Square Order
+                        Loading Spinner is waiting to create Square Order
                       </ListItem>
                       <ListItem>Scan QR Code with mobile wallet</ListItem>
                       <ListItem>Approve transaction on mobile wallet</ListItem>
@@ -133,10 +175,10 @@ export default function Home() {
                     </Heading>
                     <UnorderedList pt="2" fontSize="sm" spacing={1}>
                       <ListItem>
-                        Each terminal generates a Solana Pay URL
+                        Each terminal has its own Solana Pay URL
                       </ListItem>
                       <ListItem>
-                        Each URL reflects order on specific terminal
+                        Each Solana Pay URL reflects order on terminal
                       </ListItem>
                       <ListItem>
                         URL logged to console when QR Code created
@@ -147,22 +189,6 @@ export default function Home() {
                       <ListItem>Create new Order</ListItem>
                       <ListItem>Tap NFC tag with mobile device</ListItem>
                       <ListItem>Approve transaction on mobile wallet</ListItem>
-                    </UnorderedList>
-                  </Box>
-                  <Box>
-                    <Heading size="xs" textTransform="uppercase">
-                      NFT Discount
-                    </Heading>
-                    <UnorderedList pt="2" fontSize="sm" spacing={1}>
-                      <ListItem>
-                        If wallet holds NFT, discount is applied to order
-                      </ListItem>
-                      <ListItem>
-                        If no NFT held, mint one to wallet with checkout
-                      </ListItem>
-                      <ListItem>
-                        Square Order updated to reflect discount
-                      </ListItem>
                     </UnorderedList>
                   </Box>
                   <Box>
@@ -185,8 +211,6 @@ export default function Home() {
                     </UnorderedList>
                   </Box>
                 </Stack>
-                {/* </CardBody>
-                </Card> */}
               </AccordionPanel>
             </AccordionItem>
           </Accordion>

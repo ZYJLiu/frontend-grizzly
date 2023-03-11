@@ -1,30 +1,26 @@
+import { LinkIcon } from "@chakra-ui/icons"
 import {
+  Box,
   Button,
+  Card,
+  CardBody,
   FormControl,
-  FormLabel,
-  Input,
+  Heading,
+  HStack,
+  Link,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   VStack,
-  Card,
-  CardBody,
-  Heading,
-  HStack,
-  Link,
-  Flex,
-  Box,
 } from "@chakra-ui/react"
-import { useWallet } from "@solana/wallet-adapter-react"
-import { connection, program, usdcDevMint } from "../utils/anchor-grizzly"
-import { getAssociatedTokenAddressSync } from "@solana/spl-token"
-import { useEffect, useMemo, useState } from "react"
 import * as anchor from "@project-serum/anchor"
+import { getAssociatedTokenAddressSync, getMint, Mint } from "@solana/spl-token"
+import { useWallet } from "@solana/wallet-adapter-react"
 import { PublicKey, Transaction } from "@solana/web3.js"
-import { getMint, Mint } from "@solana/spl-token"
-import { LinkIcon } from "@chakra-ui/icons"
+import { useEffect, useState } from "react"
+import { connection, program } from "../utils/anchor-grizzly"
 
 type Props = {
   customers: string[]

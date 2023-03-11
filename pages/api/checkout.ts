@@ -1,26 +1,25 @@
 // Create Solana Pay transaction for Square order amount
 // Adds anchor-grizzly instructions (loyalty nft, reward tokens)
-import { NextApiRequest, NextApiResponse } from "next"
-import {
-  ComputeBudgetProgram,
-  Keypair,
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-} from "@solana/web3.js"
+import { AnchorGrizzly } from "@/idl/anchor_grizzly"
+import { Metaplex } from "@metaplex-foundation/js"
+import { BN, Program } from "@project-serum/anchor"
 import {
   createBurnInstruction,
   getAccount,
   getAssociatedTokenAddress,
   getMint,
 } from "@solana/spl-token"
-import { BN, Program } from "@project-serum/anchor"
+import {
+  ComputeBudgetProgram,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from "@solana/web3.js"
+import { randomUUID } from "crypto"
+import { NextApiRequest, NextApiResponse } from "next"
+import { Client, Environment } from "square"
 import { connection, program } from "../../utils/anchor-grizzly"
 import { redis } from "../../utils/redis"
-import { Metaplex } from "@metaplex-foundation/js"
-import { randomUUID } from "crypto"
-import { Client, Environment } from "square"
-import { AnchorGrizzly } from "@/idl/anchor_grizzly"
 
 const client = new Client({
   accessToken: process.env.SQUARE_ACCESS_TOKEN,

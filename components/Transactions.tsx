@@ -1,5 +1,5 @@
-import { Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react"
 import { prisma } from "@/db/prisma"
+import { Table, Th, Thead, Tr } from "@chakra-ui/react"
 
 export async function getServerSideProps() {
   // will always run on the server

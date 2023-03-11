@@ -1,13 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next"
 import fs from "fs"
-import {
-  Metaplex,
-  keypairIdentity,
-  toMetaplexFile,
-  toMetaplexFileFromJson,
-  MetaplexFile,
-  toMetaplexFileFromBrowser,
-} from "@metaplex-foundation/js"
+import { Metaplex, toMetaplexFile, MetaplexFile } from "@metaplex-foundation/js"
 import { awsStorage } from "@metaplex-foundation/js-plugin-aws"
 import { S3Client } from "@aws-sdk/client-s3"
 import { IncomingForm } from "formidable"

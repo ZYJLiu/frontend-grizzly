@@ -8,11 +8,11 @@ import {
   ValidateTransferError,
 } from "@solana/pay"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js"
-import { connection } from "../utils/anchor-grizzly"
-import { useEffect, useRef, useState } from "react"
-import Confirmed from "./Confirmed"
+import { Keypair, PublicKey } from "@solana/web3.js"
 import axios from "axios"
+import { useEffect, useRef, useState } from "react"
+import { connection } from "../utils/anchor-grizzly"
+import Confirmed from "./Confirmed"
 
 interface Props {
   onClose: () => void
