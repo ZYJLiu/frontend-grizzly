@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react"
 
 import { CreateMerchant } from "@/components/CreateMerchant"
 import { TokenCard } from "@/components/TokenCard"
+import WalletMultiButton from "@/components/WalletMultiButton"
 
 export default function MerchantPage() {
   const { publicKey, connected } = useWallet()
@@ -77,7 +78,10 @@ export default function MerchantPage() {
           <CreateMerchant merchantPDA={merchantPDA} fetchData={fetchData} />
         )
       ) : (
-        <Text>Connect Wallet</Text>
+        <VStack justifyContent="center">
+          <Text>Connect Wallet</Text>
+          <WalletMultiButton />
+        </VStack>
       )}
     </VStack>
   )
