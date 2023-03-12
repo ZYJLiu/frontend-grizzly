@@ -1,4 +1,4 @@
-// Modal component for updating merchant account data
+// Modal component for updating merchant account data (only updates the discount/reward percentages)
 import {
   Button,
   FormControl,
@@ -45,6 +45,7 @@ export const ModalComponent: React.FC<Props> = ({
   const [loading, setLoading] = useState(false)
   const description = DESCRIPTIONS[type] as string
 
+  // send transaction to update merchant account data
   const handleClick = useCallback(async () => {
     setLoading(true)
     if (!publicKey) return

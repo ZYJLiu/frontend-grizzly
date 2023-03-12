@@ -33,6 +33,7 @@ export const TokenCreate: React.FC<Props> = ({
   const [ready, setReady] = useState(false)
   const uriReady = useRef(false)
 
+  // Form data for uploading token metadata json to s3 bucket
   const formData = useMemo(() => {
     const data = {
       name: name,
@@ -50,6 +51,7 @@ export const TokenCreate: React.FC<Props> = ({
     return fd
   }, [imageUrl, merchantPDA, name, symbol, type])
 
+  // Upload token metadata json to s3 bucket
   const uploadMetadata = useCallback(async () => {
     setLoading(true)
     const response = await axios.post("/api/aws?path=json", formData)
@@ -72,6 +74,7 @@ export const TokenCreate: React.FC<Props> = ({
     }
   }, [uri, ready])
 
+  // Send transaction to create token (using Anchor)
   const transaction = useCallback(async () => {
     if (!publicKey) return
 

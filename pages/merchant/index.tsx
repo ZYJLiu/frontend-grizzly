@@ -1,4 +1,4 @@
-// This is the merchant page. It will display the merchant's NFTs and reward points.
+// This is the merchant page. It will create/display the merchant's account (Loyalty NFT and reward points token).
 import { Box, Heading, VStack, Text, HStack } from "@chakra-ui/react"
 
 import { program } from "@/utils/anchor-grizzly"
@@ -15,6 +15,7 @@ export default function MerchantPage() {
   const [merchantPDA, setMerchantPDA] = useState<PublicKey | null>(null)
   const [merchantState, setMerchantState] = useState<any>(null)
 
+  // Fetch merchant account
   const fetchData = useCallback(
     (pda: PublicKey, isInitialCall = false) => {
       return new Promise<void>((resolve, reject) => {
@@ -39,6 +40,7 @@ export default function MerchantPage() {
     [merchantPDA]
   )
 
+  // generate merchant PDA and fetch data
   useEffect(() => {
     if (publicKey && program.programId) {
       const [pda] = PublicKey.findProgramAddressSync(

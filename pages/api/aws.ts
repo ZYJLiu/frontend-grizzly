@@ -71,9 +71,6 @@ export default async function handler(
       const metadataUri = await metaplex.storage().upload(file)
       console.log("Metadata URI:", metadataUri)
       res.status(200).json({ metadataUri })
-      // res.status(200).json({})
     }
   }
-
-  //   console.log(file)
 }

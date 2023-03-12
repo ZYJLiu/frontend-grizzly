@@ -1,4 +1,5 @@
 // QR code generation for the setup page
+// Funds mobile wallet with 2 devnet sol and 100 usdc-dev
 import { createQR, encodeURL, TransactionRequestURLFields } from "@solana/pay"
 import { PublicKey } from "@solana/web3.js"
 import { RefObject } from "react"

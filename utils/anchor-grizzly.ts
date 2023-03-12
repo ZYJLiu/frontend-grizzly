@@ -12,9 +12,6 @@ import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pub
 
 // Create a connection to the devnet cluster
 export const connection = new Connection(clusterApiUrl("devnet"))
-// export const connection = new Connection(
-//   process.env.NEXT_PUBLIC_DEVNET_ENDPOINT!
-// )
 
 // Create a placeholder wallet to set up AnchorProvider
 const wallet = new NodeWallet(Keypair.generate())
@@ -38,6 +35,7 @@ export const [auth] = findProgramAddressSync(
   program.programId
 )
 
+// devnet "USDC-dev" mint
 export const usdcDevMint = new PublicKey(
   "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr"
 )

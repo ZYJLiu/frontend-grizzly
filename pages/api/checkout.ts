@@ -285,7 +285,6 @@ async function checkForDiscountNft(
   let paymentAmount = amount
   let message = `Checkout Amount $${paymentAmount}`
 
-  // TODO: fix
   // if isChecked (checked redeem reward points at checkout)
   // subtract reward points from payment amounts
   let rewardRedeemed = 0

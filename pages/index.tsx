@@ -1,4 +1,4 @@
-// setup page
+// setup page, Solana Pay QR code to fund mobile wallet with 2 devnet sol and 100 usdc-dev
 import {
   Box,
   Heading,

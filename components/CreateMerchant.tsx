@@ -1,4 +1,4 @@
-// Creates merchant account
+// Create merchant account button
 import { Button, VStack } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { useWallet } from "@solana/wallet-adapter-react"
@@ -15,11 +15,13 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
   const { publicKey, sendTransaction } = useWallet()
   const [loading, setLoading] = useState(false)
 
+  // merchant "usdc-dev" ATA
   const paymentDestination = useMemo(() => {
     if (!publicKey) return null
     return getAssociatedTokenAddressSync(usdcDevMint, publicKey)
   }, [publicKey])
 
+  // send transaction to create merchant account
   async function handleClick() {
     if (!publicKey || !paymentDestination) return
 
@@ -33,7 +35,6 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
       })
       .transaction()
 
-    // send transaction
     try {
       const txSig = await sendTransaction(tx, connection)
       setLoading(true)

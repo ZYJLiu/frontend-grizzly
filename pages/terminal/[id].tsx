@@ -61,7 +61,7 @@ export default function Terminal() {
   // Loading for order to be created before displaying QR code
   const [isLoading, setIsLoading] = useState(false)
 
-  // Loading while wating to fetch Square catalog to display items selection table
+  // Loading while waiting to fetch Square catalog to display items selection table
   const [isLoadingTable, setIsLoadingTable] = useState(true)
 
   // Solana Pay transaction confirmed, trigger create Square payment

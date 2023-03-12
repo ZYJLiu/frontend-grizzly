@@ -1,4 +1,5 @@
 // Add customer transaction to DB
+// Todo: currently not specific to connected wallet publickey
 import { prisma } from "@/db/prisma"
 import { NextApiRequest, NextApiResponse } from "next"
 

@@ -1,4 +1,4 @@
-// This component is used to airdrop reward points to customers.
+// This component is used to airdrop reward points to customers on transaction-history page.
 import { LinkIcon } from "@chakra-ui/icons"
 import {
   Box,
@@ -60,6 +60,7 @@ export const Airdrop: React.FC<Props> = ({ customers }) => {
     getMintData()
   }, [publicKey])
 
+  // Send transaction to airdrop reward points to selected customers
   async function handleClick() {
     if (!publicKey || customers.length === 0) {
       alert("Select at least one customer to airdrop.")
@@ -106,7 +107,7 @@ export const Airdrop: React.FC<Props> = ({ customers }) => {
         )
         .then(() => setTxSig(txSig))
     } catch (error) {
-      console.log(`Error creating merchant account: ${error}`)
+      console.log(`${error}`)
     } finally {
       setLoading(false)
     }

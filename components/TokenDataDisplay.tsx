@@ -1,4 +1,4 @@
-// Displays the data of the token
+// Displays the data of existing token
 import { VStack, Table, Tbody, Tr, Td } from "@chakra-ui/react"
 import { PublicKey } from "@solana/web3.js"
 import { useEffect, useState } from "react"
@@ -23,23 +23,24 @@ export const TokenDataDisplay: React.FC<Props> = ({
   const [imageUrl, setImageUrl] = useState<string>("")
   const description = type === "LOYALTY_NFT" ? "Discount" : "Reward"
 
-  useEffect(() => {
-    const fetchNFT = async () => {
-      const mintAddress =
-        type === "LOYALTY_NFT"
-          ? merchantState.loyaltyCollectionMint
-          : merchantState.rewardPointsMint
+  // Fetch token data
+  const fetchNFT = async () => {
+    const mintAddress =
+      type === "LOYALTY_NFT"
+        ? merchantState.loyaltyCollectionMint
+        : merchantState.rewardPointsMint
 
-      if (mintAddress.toString() !== "11111111111111111111111111111111") {
-        const nft = await metaplex.nfts().findByMint({ mintAddress })
-        setNft(nft)
+    if (mintAddress.toString() !== "11111111111111111111111111111111") {
+      const nft = await metaplex.nfts().findByMint({ mintAddress })
+      setNft(nft)
 
-        if (nft.json?.image !== undefined) {
-          setImageUrl(nft.json.image as string)
-        }
+      if (nft.json?.image !== undefined) {
+        setImageUrl(nft.json.image as string)
       }
     }
+  }
 
+  useEffect(() => {
     fetchNFT()
   }, [merchantState, type])
 
