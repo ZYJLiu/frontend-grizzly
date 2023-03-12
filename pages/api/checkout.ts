@@ -1,5 +1,6 @@
 // Create Solana Pay transaction for Square order amount
 // Adds anchor-grizzly instructions (loyalty nft, reward tokens)
+// Todo: checkout broken if customer burns Loyalty NFT and then tries to checkout again (due to minting from Anchor program and using a PDA for the mint)
 import { AnchorGrizzly } from "@/idl/anchor_grizzly"
 import { Metaplex } from "@metaplex-foundation/js"
 import { BN, Program } from "@project-serum/anchor"
