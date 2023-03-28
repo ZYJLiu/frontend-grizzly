@@ -1,9 +1,9 @@
 // This is the merchant page. It will create/display the merchant's account (Loyalty NFT and reward points token).
 import { Box, Heading, VStack, Text, HStack } from "@chakra-ui/react"
 
-import { program } from "@/utils/anchor-grizzly"
+import { program, connection } from "@/utils/anchor-grizzly"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { PublicKey } from "@solana/web3.js"
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js"
 import { useCallback, useEffect, useState } from "react"
 
 import { CreateMerchant } from "@/components/CreateMerchant"
@@ -16,29 +16,27 @@ export default function MerchantPage() {
   const [merchantState, setMerchantState] = useState<any>(null)
 
   // Fetch merchant account
-  const fetchData = useCallback(
-    (pda: PublicKey, isInitialCall = false) => {
-      return new Promise<void>((resolve, reject) => {
-        program.account.merchantState
-          .fetch(pda)
-          .then((account) => {
-            console.log(account)
-            setMerchantState(account)
+  const fetchData = (pda: PublicKey, isInitialCall = false) => {
+    console.log("Fetching merchant state...")
+    return new Promise<void>((resolve, reject) => {
+      program.account.merchantState
+        .fetch(pda)
+        .then((account) => {
+          console.log(account)
+          setMerchantState(account)
 
-            resolve()
-          })
-          .catch((error) => {
-            console.log(`Error fetching merchant state: ${error}`)
-            if (isInitialCall) {
-              reject()
-            } else {
-              setTimeout(() => fetchData(pda), 1000) // Retry after 1 second
-            }
-          })
-      })
-    },
-    [merchantPDA]
-  )
+          resolve()
+        })
+        .catch((error) => {
+          console.log(`Error fetching merchant state: ${error}`)
+          if (isInitialCall) {
+            reject()
+          } else {
+            setTimeout(() => fetchData(pda), 1000) // Retry after 1 second
+          }
+        })
+    })
+  }
 
   // generate merchant PDA and fetch data
   useEffect(() => {
@@ -55,6 +53,27 @@ export default function MerchantPage() {
       setMerchantState(null)
     }
   }, [publicKey, program.programId])
+
+  // Test onAccountChange, not sure why confirmed does not fetch most recent state
+  useEffect(() => {
+    if (!merchantPDA) return
+
+    const subscriptionId = connection.onAccountChange(
+      merchantPDA,
+      (accountInfo) => {
+        console.log("test", accountInfo)
+        fetchData(merchantPDA)
+      },
+      "confirmed"
+    )
+
+    console.log("Starting web socket, subscription ID: ", subscriptionId)
+
+    return () => {
+      // Unsubscribe from the account change subscription when the component unmounts
+      connection.removeAccountChangeListener(subscriptionId)
+    }
+  }, [connection, merchantPDA, program])
 
   return (
     <VStack justifyContent="center">
