@@ -255,7 +255,7 @@ export default function Terminal() {
       if (txSig === "") {
         return
       }
-      await connection.confirmTransaction(txSig, "finalized")
+      await connection.confirmTransaction(txSig)
       const txData = await connection.getParsedTransaction(txSig)
       // console.log("parsed", JSON.stringify(txData, null, 2))
 

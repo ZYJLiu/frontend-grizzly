@@ -12,7 +12,7 @@ import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pub
 
 // Create a connection to the devnet cluster
 export const connection = new Connection(clusterApiUrl("devnet"), {
-  wsEndpoint: "wss://api.devnet.solana.com",
+  commitment: "confirmed",
 })
 
 // export const connection = new Connection(

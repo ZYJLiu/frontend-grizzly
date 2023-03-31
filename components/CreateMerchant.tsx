@@ -43,14 +43,11 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
         await connection.getLatestBlockhash()
 
       await connection
-        .confirmTransaction(
-          {
-            blockhash,
-            lastValidBlockHeight,
-            signature: txSig,
-          },
-          "finalized"
-        )
+        .confirmTransaction({
+          blockhash,
+          lastValidBlockHeight,
+          signature: txSig,
+        })
         .then(() => fetchData(merchantPDA))
         .then(() => setLoading(false))
         .catch(() => setLoading(false))
