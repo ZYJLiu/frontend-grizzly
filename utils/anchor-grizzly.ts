@@ -11,7 +11,16 @@ import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js"
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey"
 
 // Create a connection to the devnet cluster
-export const connection = new Connection(clusterApiUrl("devnet"))
+// export const connection = new Connection(clusterApiUrl("devnet"), {
+//   commitment: "confirmed",
+// })
+
+export const connection = new Connection(
+  process.env.NEXT_PUBLIC_DEVNET_ENDPOINT!,
+  {
+    commitment: "confirmed",
+  }
+)
 
 // Create a placeholder wallet to set up AnchorProvider
 const wallet = new NodeWallet(Keypair.generate())

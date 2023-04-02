@@ -75,24 +75,23 @@ export const ModalComponent: React.FC<Props> = ({
       const txSig = await sendTransaction(tx, connection)
       console.log(txSig)
 
-      alert("Transaction sent, waiting for finalization...")
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash()
 
       await connection
-        .confirmTransaction(
-          {
-            blockhash,
-            lastValidBlockHeight,
-            signature: txSig,
-          },
-          "finalized"
-        )
-        .then(() => fetchData(merchantPDA))
-        .then(() => setLoading(false))
+        .confirmTransaction({
+          blockhash,
+          lastValidBlockHeight,
+          signature: txSig,
+        })
+        // .then(() => fetchData(merchantPDA))
+        .then(() => {
+          setLoading(false)
+          onClose()
+        })
         .catch(() => setLoading(false))
 
-      alert("Update complete, Transaction finalized")
+      // alert("Update complete, Transaction Confirmed")
     } catch (error) {
       console.log(`Error creating merchant account: ${error}`)
     }
