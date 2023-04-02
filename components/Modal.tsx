@@ -84,11 +84,14 @@ export const ModalComponent: React.FC<Props> = ({
           lastValidBlockHeight,
           signature: txSig,
         })
-        .then(() => fetchData(merchantPDA))
-        .then(() => setLoading(false))
+        // .then(() => fetchData(merchantPDA))
+        .then(() => {
+          setLoading(false)
+          onClose()
+        })
         .catch(() => setLoading(false))
 
-      alert("Update complete, Transaction Confirmed")
+      // alert("Update complete, Transaction Confirmed")
     } catch (error) {
       console.log(`Error creating merchant account: ${error}`)
     }

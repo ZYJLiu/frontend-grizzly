@@ -127,7 +127,7 @@ export const TokenCreate: React.FC<Props> = ({
       )
       console.log(txSig)
 
-      alert("Transaction sent, waiting for finalization...")
+      // alert("Transaction sent, waiting for finalization...")
 
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash()
@@ -138,7 +138,7 @@ export const TokenCreate: React.FC<Props> = ({
           lastValidBlockHeight,
           signature: txSig,
         })
-        .then(() => fetchData(merchantPDA))
+        // .then(() => fetchData(merchantPDA))
         .then(() => setLoading(false))
         .catch(() => setLoading(false))
     } catch (error) {

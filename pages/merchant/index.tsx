@@ -61,10 +61,15 @@ export default function MerchantPage() {
     const subscriptionId = connection.onAccountChange(
       merchantPDA,
       (accountInfo) => {
-        console.log("test", accountInfo)
-        fetchData(merchantPDA)
-      },
-      "confirmed"
+        const decoded = program.coder.accounts.decode(
+          "merchantState",
+          accountInfo.data
+        )
+        console.log("Merchant State", JSON.stringify(decoded, null, 2))
+        setMerchantState(decoded)
+        // console.log("AccountInfo", accountInfo)
+        // fetchData(merchantPDA)
+      }
     )
 
     console.log("Starting web socket, subscription ID: ", subscriptionId)
