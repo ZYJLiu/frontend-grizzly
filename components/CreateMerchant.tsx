@@ -48,7 +48,7 @@ export const CreateMerchant: React.FC<Props> = ({ merchantPDA, fetchData }) => {
           lastValidBlockHeight,
           signature: txSig,
         })
-        // .then(() => fetchData(merchantPDA))
+        .then(() => fetchData(merchantPDA))
         .then(() => setLoading(false))
         .catch(() => setLoading(false))
     } catch (error) {
